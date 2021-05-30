@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% if title %}
+    <title>{{ title }} | Сакура</title>
+    {% else %}
+    <title>Сакура</title>
+    {% endif %}
+</head>
+<body>
+{% if get_flashed_messages() %}
+    <ul>
+    {% for message in get_flashed_messages() %}
+        <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+{% block content %}{% endblock %}
+</body>
+</html>
