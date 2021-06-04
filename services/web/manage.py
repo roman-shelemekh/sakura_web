@@ -1,22 +1,20 @@
-from flask.cli import FlaskGroup
+from sakura import app, db
 
-from sakura import app, db, User
-
-
-cli = FlaskGroup(app)
-
-
-@cli.command("create_db")
-def create_db():
-    db.drop_all()
-    db.create_all()
-    db.session.commit()
-
-@cli.command("seed_db")
-def seed_db():
-    db.session.add(User(email="shelemekh@tut.by"))
-    db.session.commit()
+from sakura.models import (
+    User, Salon, Service, Hairdresser, Client, Appointment, Calendar, Shifts
+)
 
 
-if __name__ == "__main__":
-    cli()
+@app.shell_context_processor
+def make_shell_context():
+    return {
+        'db': db,
+        'User': User,
+        'Salon': Salon,
+        'Service': Service,
+        'Hairdresser': Hairdresser,
+        'Client': Client,
+        'Appointment': Appointment,
+        'Calendar': Calendar,
+        'Shifts': Shifts,
+    }

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<main class="container">
+    <div class="row">
+        <div class="col-lg-3 mt-4">
+            <ul class="nav flex-column">
+                <h4 class="pb-3">Меню панели управления</h4>
+                <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="#">График работы</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Парикмахерские</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-inline" href="{{ url_for('hairdresser') }}">Мастера</a>
+                    <a class="add_hairdresser" href="{{ url_for('add_hairdresser') }}"><i class="fas fa-plus-circle"></i></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Услуги</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Записи</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Клиенты</a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-lg-9 mt-4 border-start ps-4 min-vh-100">
+            {% if get_flashed_messages() %}
+            {% for message in get_flashed_messages() %}
+            <div class="alert alert-success" role="alert">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+            {% block right_column %}{% endblock %}
+        </div>
+    </div>
+
+</main>
+
+
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript" src="/static/main.js"></script>
+{% endblock %}

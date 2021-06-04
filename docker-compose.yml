@@ -5,6 +5,8 @@ services:
     image: postgres:13.2
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - 5500:5432
     environment:
       - POSTGRES_USER=sakura
       - POSTGRES_PASSWORD=sakura
@@ -12,7 +14,7 @@ services:
 
   sakura:
     build: ./services/web
-    command: python manage.py run -h 0.0.0.0
+    command: flask run --host=0.0.0.0
     volumes:
       - ./services/web/:/usr/src/app
     ports:

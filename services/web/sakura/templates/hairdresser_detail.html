@@ -1,0 +1,50 @@
+{% extends "admin.html" %}
+
+{% block right_column %}
+<h3 class="mb-3">Мастер {{ hairdresser }}</h3>
+<form action="" method="post" class="needs-validation" novalidate>
+    <div>{{ form.hidden_tag() }}</div>
+    <div class="form-floating mb-3">
+        {{ form.name(class='form-control' + (" is-invalid" if form.name.errors else ""), placeholder='Имя', id='id_name') }}
+        <label for="id_name">Имя</label>
+        {% if form.name.errors %}
+        <div id="id_name" class="invalid-feedback">
+            {% for error in form.name.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-floating mb-3">
+        {{ form.dob(class='form-control' + (" is-invalid" if form.dob.errors else ""), placeholder='Дата рождения', id='id_dob') }}
+        <label for="id_dob">Дата рождения</label>
+        {% if form.dob.errors %}
+        <div id="id_dob" class="invalid-feedback">
+            {% for error in form.dob.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-floating mb-3">
+        {{ form.specialization(class='form-control' + (" is-invalid" if form.specialization.errors else ""), placeholder='Специализация', style='height: 100px;', id='id_specialization') }}
+        <label for="id_specialization">Специализация</label>
+        {% if form.specialization.errors %}
+        <div id="id_specialization" class="invalid-feedback">
+            {% for error in form.specialization.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="pe-2">Мастер доступен для работы:</label> {{ form.is_available }}
+    </div>
+    <div class="d-grid gap-2 mb-3">
+        <button class="btn btn-lg btn-primary" type="submit">Внести изменения</button>
+    </div>
+</form>
+<div class="d-grid gap-2 mb-3">
+    <a href="{{ url_for('delete_hairdresser', hairdresser_id=hairdresser.id) }}" class="btn btn-lg btn-danger" onclick="return confirm('Вы уверены?');">Удалить запись</a>
+</div>
+{% endblock %}
