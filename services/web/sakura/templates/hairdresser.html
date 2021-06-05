@@ -2,7 +2,7 @@
 
 {% block right_column %}
 <div>
-    <a href="{{ url_for('add_hairdresser') }}" class="add_hairdresser btn btn-outline-primary btn-sm float-end"><i class="fas fa-plus-circle pe-2"></i>Добавить мастера</a>
+    <a href="{{ url_for('add_hairdresser') }}" class="btn btn-outline-primary btn-sm float-end"><i class="fas fa-plus-circle pe-2"></i>Добавить мастера</a>
     <h3 class="mb-3">Мастера</h3>
 </div>
 <table class="table">
@@ -11,8 +11,8 @@
             <th scope="col">#</th>
             <th scope="col">Имя</th>
             <th scope="col">День рождения</th>
-            <th scope="col">Специализация</th>
             <th scope="col">Статус</th>
+            <th scope="col">Комментарий</th>
         </tr>
     </thead>
     <tbody>
@@ -21,8 +21,8 @@
             <th scope="row">{{ loop.index }}</th>
             <td><a href="{{ url_for('hairdresser_detail', hairdresser_id=hairdresser.id) }}">{{ hairdresser }}</a></td>
             <td>{% if hairdresser.dob %}{{ hairdresser.dob|ru_date }}{% else %} - {% endif %}</td>
-            <td>{% if hairdresser.specialization %}{{ hairdresser.specialization }}{% else %} - {% endif %}</td>
             <td>{% if hairdresser.is_available %} <i class="far fa-check-circle"></i> {% else %} <i class="far fa-times-circle"></i> {% endif %}</td>
+            <td>{% if hairdresser.comment %}{{ hairdresser.comment }}{% else %} - {% endif %}</td>
         </tr>
     {% endfor %}
     </tbody>

@@ -1,0 +1,66 @@
+{% extends "admin.html" %}
+
+{% block right_column %}
+<h3 class="mb-3">Новая парикмахерская</h3>
+<form action="" method="post" class="needs-validation" novalidate>
+    <div>{{ form.hidden_tag() }}</div>
+    <div class="form-floating mb-3">
+        {{ form.name(class='form-control' + (" is-invalid" if form.name.errors else ""), placeholder='Название', id='id_name') }}
+        <label for="id_name">Название</label>
+        {% if form.name.errors %}
+        <div id="id_name" class="invalid-feedback">
+            {% for error in form.name.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-floating mb-3">
+        {{ form.address(class='form-control' + (" is-invalid" if form.address.errors else ""), placeholder='Адрес', id='id_address') }}
+        <label for="id_address">Адрес</label>
+        {% if form.address.errors %}
+        <div id="id_address" class="invalid-feedback">
+            {% for error in form.address.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-floating mb-3">
+        {{ form.phone_number(class='form-control' + (" is-invalid" if form.phone_number.errors else ""), placeholder='Номер телефона', id='id_phone_number') }}
+        <label for="id_phone_number">Номер телефона</label>
+        {% if form.phone_number.errors %}
+        <div id="id_phone_number" class="invalid-feedback">
+            {% for error in form.phone_number.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-floating mb-3">
+        {{ form.latitude(class='form-control' + (" is-invalid" if form.latitude.errors else ""), placeholder='Широта', id='id_latitude') }}
+        <label for="id_latitude">Широта</label>
+        {% if form.latitude.errors %}
+        <div id="id_latitude" class="invalid-feedback">
+            {% for error in form.latitude.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-floating mb-3">
+        {{ form.longitude(class='form-control' + (" is-invalid" if form.longitude.errors else ""), placeholder='Долгота', id='id_longitude') }}
+        <label for="id_longitude">Долгота</label>
+        {% if form.longitude.errors %}
+        <div id="id_longitude" class="invalid-feedback">
+            {% for error in form.longitude.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="d-grid gap-2 mb-3">
+        <button class="btn btn-lg btn-primary" type="submit">Добавить</button>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "admin.html" %}
+
+{% block right_column %}
+<h3 class="mb-3">Услуга {{ service.name }}</h3>
+<form action="" method="post" class="needs-validation" novalidate>
+    <div>{{ form.hidden_tag() }}</div>
+    <div class="form-floating mb-3">
+        {{ form.name(class='form-control' + (" is-invalid" if form.name.errors else ""), placeholder='Название', id='id_name') }}
+        <label for="id_name">Название</label>
+        {% if form.name.errors %}
+        <div id="id_name" class="invalid-feedback">
+            {% for error in form.name.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-floating mb-3">
+        {{ form.price(class='form-control' + (" is-invalid" if form.price.errors else ""), placeholder='Цена', id='id_price') }}
+        <label for="id_price">Цена</label>
+        {% if form.price.errors %}
+        <div id="id_price" class="invalid-feedback">
+            {% for error in form.price.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-floating mb-3">
+        {{ form.type(class="form-select", placeholder='Тип услуги', id='id_type') }}
+        <label for="id_type">Тип услуги</label>
+    </div>
+    <div class="d-grid gap-2 mb-3">
+        <button class="btn btn-lg btn-primary" type="submit">Внести изменения</button>
+    </div>
+</form>
+<div class="d-grid gap-2 mb-3">
+    <a href="{{ url_for('delete_service', service_id=service.id) }}" class="btn btn-lg btn-danger" onclick="return confirm('Вы уверены?');">Удалить запись</a>
+</div>
+{% endblock %}

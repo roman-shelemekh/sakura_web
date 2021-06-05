@@ -1,0 +1,29 @@
+{% extends "admin.html" %}
+
+{% block right_column %}
+<div>
+    <a href="{{ url_for('add_salon') }}" class="btn btn-outline-primary btn-sm float-end"><i class="fas fa-plus-circle pe-2"></i>Добавить парикмахерскую</a>
+    <h3 class="mb-3">Парикмахерские</h3>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Название</th>
+            <th scope="col">Адрес</th>
+            <th scope="col">Телефон</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for salon in salons %}
+        <tr>
+            <th scope="row">{{ loop.index }}</th>
+            <td><a href="{{ url_for('salon_detail', salon_id=salon.id) }}">{{ salon }}</a></td>
+            <td>{{ salon.address }}</td>
+            <td>{% if salon.phone_number %}{{ salon.phone_number }}{% else %} - {% endif %}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

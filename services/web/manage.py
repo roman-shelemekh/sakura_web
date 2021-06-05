@@ -1,7 +1,7 @@
 from sakura import app, db
 
 from sakura.models import (
-    User, Salon, Service, Hairdresser, Client, Appointment, Calendar, Shifts
+    User, Salon, Service, Hairdresser, Client, Appointment, Calendar, Shifts, Type
 )
 
 
@@ -17,4 +17,5 @@ def make_shell_context():
         'Appointment': Appointment,
         'Calendar': Calendar,
         'Shifts': Shifts,
+        'Type': Type,
     }

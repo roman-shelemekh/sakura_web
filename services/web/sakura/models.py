@@ -28,29 +28,53 @@ class User(UserMixin, db.Model):
 class Salon(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True, nullable=False)
-    address = db.Column(db.String(64), unique=True, nullable=False)
-    phone_number = db.Column(db.String(32))
+    address = db.Column(db.String(128), unique=True, nullable=False)
+    phone_number = db.Column(db.String(13))
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     appointments = db.relationship('Appointment', backref='salon_appointment', lazy=True)
     shifts = db.relationship('Shifts', backref='salon_shifts', lazy=True)
     __table_args__ = (db.UniqueConstraint('latitude', 'longitude'),)
 
+    def __repr__(self):
+        return self.name
+
+
+specialization = db.Table('specialization',
+    db.Column('service_id', db.Integer, db.ForeignKey('service.id'), primary_key=True),
+    db.Column('hairdresser_id', db.Integer, db.ForeignKey('hairdresser.id'), primary_key=True)
+)
+
 
 class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), unique=True, nullable=False)
+    name = db.Column(db.String(128), nullable=False)
     price = db.Column(db.Float)
+    type_id = db.Column(db.Integer, db.ForeignKey('type.id'), nullable=False)
     appointments = db.relationship('Appointment', backref='service_appointment', lazy=True)
+
+    def __repr__(self):
+        return self.name
+
+
+class Type(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(40), unique=True, nullable=False)
+    services = db.relationship('Service', backref='service_type', lazy=True)
+
+    def __repr__(self):
+        return self.name
 
 
 class Hairdresser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True, nullable=False)
     dob = db.Column(db.Date, nullable=True)
-    specialization = db.Column(db.String(500))
     is_available = db.Column(db.Boolean, default=True)
-    appointments = db.relationship('Appointment', backref='hairdresser_appointment', lazy=True, )
+    comment = db.Column(db.String(500))
+    specialization = db.relationship('Service', secondary=specialization, lazy='subquery',
+                                     backref=db.backref('service_hairdresser', lazy=True))
+    appointments = db.relationship('Appointment', backref='hairdresser_appointment', lazy=True)
     shifts = db.relationship('Shifts', backref='hairdresser_shifts', lazy=True)
 
     def __repr__(self):
@@ -63,6 +87,9 @@ class Client(db.Model):
     phone_number = db.Column(db.String(32), unique=True, nullable=False)
     discount = db.Column(db.Integer)
     appointments = db.relationship('Appointment', backref='client_appointment', lazy=True)
+
+    def __repr__(self):
+        return self.name
 
 
 class Appointment(db.Model):

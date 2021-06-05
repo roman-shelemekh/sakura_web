@@ -12,20 +12,34 @@
                     <a class="nav-link" aria-current="page" href="#">График работы</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Парикмахерские</a>
+                    <div class="nav-link">
+                        <a class="text-decoration-none me-2" href="{{ url_for('salon') }}">Парикмахерские</a>
+                        <a class="add_hairdresser" href="{{ url_for('add_salon') }}"><i class="fas fa-plus-circle"></i></a>
+                    </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-inline" href="{{ url_for('hairdresser') }}">Мастера</a>
-                    <a class="add_hairdresser" href="{{ url_for('add_hairdresser') }}"><i class="fas fa-plus-circle"></i></a>
+                    <div class="nav-link">
+                        <a class="text-decoration-none me-2" href="{{ url_for('hairdresser') }}">Мастера</a>
+                        <a class="add_hairdresser" href="{{ url_for('add_hairdresser') }}"><i class="fas fa-plus-circle"></i></a>
+                    </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Услуги</a>
+                    <div class="nav-link">
+                        <a class="text-decoration-none me-2" href="{{ url_for('service') }}">Услуги</a>
+                        <a class="add_hairdresser" href="{{ url_for('add_service') }}"><i class="fas fa-plus-circle"></i></a>
+                    </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Записи</a>
+                    <div class="nav-link">
+                        <a class="text-decoration-none me-2" href="#">Записи</a>
+                        <a class="add_hairdresser" href="#"><i class="fas fa-plus-circle"></i></a>
+                    </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Клиенты</a>
+                    <div class="nav-link">
+                        <a class="text-decoration-none me-2" href="#">Клиенты</a>
+                        <a class="add_hairdresser" href="#"><i class="fas fa-plus-circle"></i></a>
+                    </div>
                 </li>
             </ul>
         </div>
