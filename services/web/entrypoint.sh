@@ -11,4 +11,6 @@ then
     echo "PostgreSQL started"
 fi
 
+flask db upgrade
+
 exec "$@"

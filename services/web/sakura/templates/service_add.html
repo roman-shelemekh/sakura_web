@@ -29,6 +29,13 @@
     <div class="form-floating mb-3">
         {{ form.type(class="form-select", placeholder='Тип услуги', id='id_type') }}
         <label for="id_type">Тип услуги</label>
+        {% if form.price.errors %}
+        <div id="id_type" class="invalid-feedback">
+            {% for error in form.type.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
     <div class="d-grid gap-2 mb-3">
         <button class="btn btn-lg btn-primary" type="submit">Добавить</button>

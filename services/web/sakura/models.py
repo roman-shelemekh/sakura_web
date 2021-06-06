@@ -50,7 +50,7 @@ class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), nullable=False)
     price = db.Column(db.Float)
-    type_id = db.Column(db.Integer, db.ForeignKey('type.id'), nullable=False)
+    type_id = db.Column(db.Integer, db.ForeignKey('type.id', ondelete='SET NULL'))
     appointments = db.relationship('Appointment', backref='service_appointment', lazy=True)
 
     def __repr__(self):

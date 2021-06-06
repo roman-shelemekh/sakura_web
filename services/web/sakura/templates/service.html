@@ -3,8 +3,23 @@
 {% block right_column %}
 <div>
     <a href="{{ url_for('add_service') }}" class="btn btn-outline-primary btn-sm float-end"><i class="fas fa-plus-circle pe-2"></i>Добавить услугу</a>
+    <a href="{{ url_for('service_type_add') }}" class="btn btn-outline-primary btn-sm float-end me-3"><i class="fas fa-plus-circle pe-2"></i>Добавить тип услуг</a>
     <h3 class="mb-3">Услуги</h3>
 </div>
+<div class="pb-2">
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == url_for('service') %}active{% endif %}" href="{{ url_for('service') }}">Все</a>
+        </li>
+        {% for type in types %}
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == url_for('service_by_type', type_id=type.id) %}active{% endif %}" href="{{ url_for('service_by_type', type_id=type.id) }}">{{ type.name|capitalize }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+
 <table class="table">
     <thead>
         <tr>

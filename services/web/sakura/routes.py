@@ -1,8 +1,8 @@
 from flask import render_template, send_from_directory, flash, redirect, url_for, request
 from flask_login import current_user, login_user, logout_user, login_required
 from . import app, db
-from .forms import LoginForm, HairdresserForm, SalonForm, ServiceForm
-from .models import User, Hairdresser, Salon, Service
+from .forms import LoginForm, HairdresserForm, SalonForm, ServiceForm, TypeForm
+from .models import User, Hairdresser, Salon, Service, Type
 
 
 @app.route("/")
@@ -53,6 +53,8 @@ def hairdresser():
 def hairdresser_detail(hairdresser_id):
     hairdresser = Hairdresser.query.get_or_404(hairdresser_id)
     form = HairdresserForm(edit=True)
+    form.specialization.choices = [(str(row.id), row.name + ' (' + row.service_type.name + ')') for row in
+                                   Service.query.all()]
     if form.validate_on_submit():
         hairdresser.name = form.name.data
         hairdresser.dob = form.dob.data
@@ -66,7 +68,6 @@ def hairdresser_detail(hairdresser_id):
     elif request.method == 'GET':
         form.specialization.default = [str(i.id) for i in hairdresser.specialization]
         form.process()
-
         form.name.data = hairdresser.name
         form.dob.data = hairdresser.dob
         form.comment.data = hairdresser.comment
@@ -90,6 +91,7 @@ def delete_hairdresser(hairdresser_id):
 def add_hairdresser():
     form = HairdresserForm()
     form.is_available.data = True
+    form.specialization.choices = [(str(row.id), row.name + ' (' + row.service_type.name + ')') for row in Service.query.all()]
     if form.validate_on_submit():
         hairdresser = Hairdresser(name=form.name.data, dob=form.dob.data,
                                   comment=form.comment.data,
@@ -159,8 +161,17 @@ def add_salon():
 @app.route('/admin/service')
 @login_required
 def service():
+    types = Type.query.all()
     services = Service.query.order_by(Service.id).all()
-    return render_template('service.html', title='Услуги', serviсes=services)
+    return render_template('service.html', title='Услуги', serviсes=services, types=types)
+
+
+@app.route('/admin/service/type/<int:type_id>')
+@login_required
+def service_by_type(type_id):
+    types = Type.query.all()
+    type = Type.query.get_or_404(type_id)
+    return render_template('service.html', title=type.name, serviсes=type.services, types=types)
 
 
 @app.route('/admin/service/<int:service_id>', methods=['GET', 'POST'])
@@ -168,6 +179,7 @@ def service():
 def service_detail(service_id):
     service = Service.query.get_or_404(service_id)
     form = ServiceForm(edit=True)
+    form.type.choices = [(str(row.id), row.name) for row in Type.query.all()]
     if form.validate_on_submit():
         service.name = form.name.data
         service.price = form.price.data
@@ -188,6 +200,7 @@ def service_detail(service_id):
 @login_required
 def add_service():
     form = ServiceForm()
+    form.type.choices = [(str(row.id), row.name) for row in Type.query.all()]
     if form.validate_on_submit():
         service = Service(name=form.name.data, price=form.price.data, type_id=form.type.data)
         db.session.add(service)
@@ -205,3 +218,16 @@ def delete_service(service_id):
     db.session.commit()
     flash(f'Услуга "{service.name}" удалена.')
     return redirect(url_for('service'))
+
+
+@app.route('/admin/service/type/add', methods=['GET', 'POST'])
+@login_required
+def service_type_add():
+    form = TypeForm()
+    if form.validate_on_submit():
+        type = Type(name=form.name.data)
+        db.session.add(type)
+        db.session.commit()
+        flash(f'Тип услуг {type.name} успешно добавлен.')
+        return redirect(url_for('service'))
+    return render_template('service_type_add.html', title='Новый тип услуг', form=form)

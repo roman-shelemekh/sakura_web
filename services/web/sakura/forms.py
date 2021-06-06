@@ -6,6 +6,7 @@ from wtforms.validators import DataRequired, Length, Optional
 from .models import User, Hairdresser, Salon, Service, Type
 from .utils import Unique, MyForm, MyDateField, MyFloatField
 
+
 class LoginForm(FlaskForm):
     username = StringField('Пользователь', validators=[DataRequired(message='Обязательное поле.')])
     password = PasswordField('Пароль', validators=[DataRequired(message='Обязательное поле.')])
@@ -34,8 +35,7 @@ class HairdresserForm(MyForm):
                                                         min=0, max=500,
                                                         message='Поле "Комментарий" не должно превышать 500 знаков.')])
     is_available = BooleanField('Статус')
-    specialization = SelectMultipleField('Специализация мастера',
-                                         choices=[(str(row.id), row.name + ' (' + row.service_type.name + ')') for row in Service.query.all()])
+    specialization = SelectMultipleField('Специализация мастера')
 
 
 class SalonForm(MyForm):
@@ -61,4 +61,10 @@ class ServiceForm(MyForm):
                        validators=[DataRequired(message='Обязательное поле.'),
                                    Length(min=0, max=128, message='Поле "Название" не должно превышать 128 знаков.')])
     price = MyFloatField('Цена', validators=[Optional()])
-    type = SelectField('Тип', choices=[(str(row.id), row.name) for row in Type.query.all()])
+    type = SelectField('Тип')
+
+
+class TypeForm(MyForm):
+    name = StringField('Название',
+                       validators=[DataRequired(message='Обязательное поле.'),
+                                   Length(min=0, max=40, message='Поле "Название" не должно превышать 40 знаков.')])
