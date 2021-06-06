@@ -1,5 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField
+from wtforms import (
+    StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField, SelectMultipleField
+)
 from wtforms.validators import DataRequired, Length, Optional
 from .models import User, Hairdresser, Salon, Service, Type
 from .utils import Unique, MyForm, MyDateField, MyFloatField
@@ -32,6 +34,8 @@ class HairdresserForm(MyForm):
                                                         min=0, max=500,
                                                         message='Поле "Комментарий" не должно превышать 500 знаков.')])
     is_available = BooleanField('Статус')
+    specialization = SelectMultipleField('Специализация мастера',
+                                         choices=[(str(row.id), row.name + ' (' + row.service_type.name + ')') for row in Service.query.all()])
 
 
 class SalonForm(MyForm):
@@ -52,11 +56,9 @@ class SalonForm(MyForm):
     longitude = MyFloatField('Долгота', validators=[Optional()])
 
 
-CHOICES=[(row.id, row.name) for row in Type.query.all()]
-
 class ServiceForm(MyForm):
     name = StringField('Название',
                        validators=[DataRequired(message='Обязательное поле.'),
                                    Length(min=0, max=128, message='Поле "Название" не должно превышать 128 знаков.')])
     price = MyFloatField('Цена', validators=[Optional()])
-    type = SelectField('Тип', choices=CHOICES)
+    type = SelectField('Тип', choices=[(str(row.id), row.name) for row in Type.query.all()])

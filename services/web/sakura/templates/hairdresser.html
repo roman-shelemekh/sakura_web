@@ -21,7 +21,7 @@
             <th scope="row">{{ loop.index }}</th>
             <td><a href="{{ url_for('hairdresser_detail', hairdresser_id=hairdresser.id) }}">{{ hairdresser }}</a></td>
             <td>{% if hairdresser.dob %}{{ hairdresser.dob|ru_date }}{% else %} - {% endif %}</td>
-            <td>{% if hairdresser.is_available %} <i class="far fa-check-circle"></i> {% else %} <i class="far fa-times-circle"></i> {% endif %}</td>
+            <td>{% if hairdresser.is_available %} <i class="text-success far fa-check-circle"></i> {% else %} <i class="text-danger far fa-times-circle"></i> {% endif %}</td>
             <td>{% if hairdresser.comment %}{{ hairdresser.comment }}{% else %} - {% endif %}</td>
         </tr>
     {% endfor %}

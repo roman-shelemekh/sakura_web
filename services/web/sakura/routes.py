@@ -58,10 +58,15 @@ def hairdresser_detail(hairdresser_id):
         hairdresser.dob = form.dob.data
         hairdresser.comment = form.comment.data
         hairdresser.is_available = form.is_available.data
+        print(form.specialization.data)
+        hairdresser.specialization = [Service.query.get(int(i)) for i in form.specialization.data]
         db.session.commit()
         flash(f'Данные мастера {hairdresser.name} успешно изменены.')
         return redirect(url_for('hairdresser'))
     elif request.method == 'GET':
+        form.specialization.default = [str(i.id) for i in hairdresser.specialization]
+        form.process()
+
         form.name.data = hairdresser.name
         form.dob.data = hairdresser.dob
         form.comment.data = hairdresser.comment
@@ -171,10 +176,10 @@ def service_detail(service_id):
         flash(f'Услуга {service.name} успешно изменена.')
         return redirect(url_for('service'))
     elif request.method == 'GET':
-        form.name.data = service.name
-        form.price.data = service.price
         form.type.default = service.type_id
         form.process()
+        form.name.data = service.name
+        form.price.data = service.price
     return render_template('service_detail.html', title=f'Услуга {service.name}',
                            service=service, form=form)
 
