@@ -1,0 +1,99 @@
+{% extends "admin.html" %}
+
+{% block right_column %}
+
+<!--Переключение парикмахерских-->
+<div class="row mb-3">
+    <div class="col-8">
+        <h3 class="mb-3">График работы на {{ month_for_heading }}</h3>
+    </div>
+    <div class="col-4">
+        <select class="form-select float-end" id="selectSalon">
+            {% for salon in salons %}
+            <option value="{{ url_for('schedule', salon_id=salon.id, year=current_year, month=current_month) }}" {% if salon_id == salon.id %} selected="true" {% endif %}> {{ salon.name }} </option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+<!--Новегация по месяцам-->
+<div class="pb-2">
+    <ul class="nav nav-tabs">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Ранее</a>
+            <ul class="dropdown-menu">
+                {% for month in months_to_navigate[:3]|reverse %}
+                <li>
+                    <a class="dropdown-item" href="{{ url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% for month in months_to_navigate[3:8] %}
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) %}active{% endif %}" href="{{ url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
+        </li>
+        {% endfor %}
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Далее</a>
+            <ul class="dropdown-menu">
+                {% for month in months_to_navigate[8:] %}
+                <li>
+                    <a class="dropdown-item" href="{{ url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+    </ul>
+</div>
+
+<div class="row">
+<!--    Календарь-->
+    <div class="col-7 mt-3">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Дата</th>
+                    <th scope="col">Мастера</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for date in dates %}
+                <tr>
+                    <td scope="row"><b>{{ date.date|ru_date }}</b></br>{{ date.date|ru_weekday }}</td>
+                    <td ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="leave(event)" class="drop-zone">
+                        {% for shift in date.shifts %}
+                        {% if shift.salon_id == salon_id %}
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <a class="text-secondary text-decoration-none" draggable="false" href="{{ url_for('hairdresser_detail', hairdresser_id=shift.hairdresser_shifts.id) }}"><i class="fas fa-cut"></i> {{ shift.hairdresser_shifts }}</a>
+                                <button type="button" class="btn-close float-end" aria-label="Close"></button>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+<!--    Все мастера-->
+    <div class="col-5">
+        <div class="border p-3 mt-3 sticky-top overflow-auto ">
+            <h6 class="mb-4">Перетащите мастера в нужную ячейку графика</h6>
+            {% for hairdresser in hairdressers %}
+            <div class="card mb-2" draggable="true" id="hairdresser_{{ hairdresser.id }}" ondragstart="drag(event)">
+                <div class="card-body">
+                    <a class="text-secondary text-decoration-none" draggable="false" href="{{ url_for('hairdresser_detail', hairdresser_id=hairdresser.id) }}"><i class="fas fa-cut"></i> {{ hairdresser.name }}</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block script %}
+<script type="text/javascript" src="{{ url_for('staticfiles', filename='schedule.js') }}"></script>
+{% endblock %}

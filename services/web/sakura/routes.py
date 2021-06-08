@@ -2,8 +2,8 @@ from flask import render_template, send_from_directory, flash, redirect, url_for
 from flask_login import current_user, login_user, logout_user, login_required
 from . import app, db
 from .forms import LoginForm, HairdresserForm, SalonForm, ServiceForm, TypeForm
-from .models import User, Hairdresser, Salon, Service, Type
-
+from .models import User, Hairdresser, Salon, Service, Type, Calendar
+from .utils import months_to_navigate, month_for_heading
 
 @app.route("/")
 def index():
@@ -60,7 +60,6 @@ def hairdresser_detail(hairdresser_id):
         hairdresser.dob = form.dob.data
         hairdresser.comment = form.comment.data
         hairdresser.is_available = form.is_available.data
-        print(form.specialization.data)
         hairdresser.specialization = [Service.query.get(int(i)) for i in form.specialization.data]
         db.session.commit()
         flash(f'Данные мастера {hairdresser.name} успешно изменены.')
@@ -96,6 +95,7 @@ def add_hairdresser():
         hairdresser = Hairdresser(name=form.name.data, dob=form.dob.data,
                                   comment=form.comment.data,
                                   is_available=form.is_available.data)
+        hairdresser.specialization = [Service.query.get(int(i)) for i in form.specialization.data]
         db.session.add(hairdresser)
         db.session.commit()
         flash(f'Мастер {hairdresser.name} успешно добавлен.')
@@ -231,3 +231,14 @@ def service_type_add():
         flash(f'Тип услуг {type.name} успешно добавлен.')
         return redirect(url_for('service'))
     return render_template('service_type_add.html', title='Новый тип услуг', form=form)
+
+
+@app.route('/admin/schedule/<int:salon_id>/<int:year>/<int:month>')
+@login_required
+def schedule(year, month, salon_id):
+    salons = Salon.query.all()
+    hairdressers = Hairdresser.query.filter(Hairdresser.is_available == True).all()
+    dates = Calendar().month(year, month)
+    return render_template('schedule.html', title='График работы', dates=dates, salon_id=salon_id, salons=salons,
+                           hairdressers=hairdressers, months_to_navigate=months_to_navigate(year, month),
+                           month_for_heading=month_for_heading(year, month))

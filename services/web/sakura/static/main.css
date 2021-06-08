@@ -1,0 +1,18 @@
+.sticky-top {
+    top: 1em;
+    max-height: calc(100vh - 30px);
+}
+
+.dropdown-menu {
+    z-index: 1050;
+}
+
+.drop-zone {
+    width: 300px;
+    height: 70px;
+}
+
+.drop-zone--over {
+    border: dashed 2px #86989B;
+
+}

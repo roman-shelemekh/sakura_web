@@ -2,6 +2,8 @@ from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from . import login
+from datetime import datetime
+from calendar import monthrange
 
 
 @login.user_loader
@@ -106,6 +108,16 @@ class Calendar(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, unique=True)
     shifts = db.relationship('Shifts', backref='calendar_shifts')
+
+    def __repr__(self):
+        return self.date.strftime('%d.%m.%Y')
+
+    def month(self, year, month):
+        dayn = monthrange(year, month)[-1]
+        first_day = datetime(year, month, 1)
+        last_day = datetime(year, month, dayn)
+        dates = self.query.filter(Calendar.date.between(first_day, last_day)).all()
+        return dates
 
 
 class Shifts(db.Model):

@@ -15,3 +15,4 @@ login.login_view = 'login'
 
 from . import routes, models
 from .template_filters import format_date
+from .context_processors import inject_year_and_month
