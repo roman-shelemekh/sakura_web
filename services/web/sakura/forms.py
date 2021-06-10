@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import (
-    StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField, SelectMultipleField
+    widgets, StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField, SelectMultipleField
 )
 from wtforms.validators import DataRequired, Length, Optional
 from .models import User, Hairdresser, Salon, Service, Type
@@ -35,7 +35,8 @@ class HairdresserForm(MyForm):
                                                         min=0, max=500,
                                                         message='Поле "Комментарий" не должно превышать 500 знаков.')])
     is_available = BooleanField('Статус')
-    specialization = SelectMultipleField('Специализация мастера')
+    specialization = SelectMultipleField('Специализация мастера', widget=widgets.ListWidget(prefix_label=False),
+                                         option_widget=widgets.CheckboxInput())
 
 
 class SalonForm(MyForm):
@@ -48,12 +49,24 @@ class SalonForm(MyForm):
                           validators=[Unique(object_class=Salon, column='address',
                                              message='Парикмахерская с таким адресом уже существует.'),
                                       DataRequired(message='Обязательное поле.'),
-                                      Length(min=0, max=128, message='Поле "Название" не должно превышать 128 знаков.')])
+                                      Length(min=0, max=128, message='Поле "Название" не должно превышать 128 знаков.')]
+                          )
     phone_number = StringField('Номер телефона', validators=[Length(min=0, max=13,
                                                  message='Поле "Номер телефона" не должно '
                                                          'превышать 13 знаков (+375XXXXXXXXX).')])
     latitude = MyFloatField('Широта', validators=[Optional()])
     longitude = MyFloatField('Долгота', validators=[Optional()])
+
+    def validate(self):
+        val = super(SalonForm, self).validate(extra_validators=None)
+        if not val:
+            return False
+        salon = Salon.query.filter_by(latitude=self.latitude.data, longitude=self.longitude.data).first()
+        if salon is not None:
+            self.latitude.errors.append(' ')
+            self.longitude.errors.append('Парикмахерская с такими координатами уже существует.')
+            return False
+        return True
 
 
 class ServiceForm(MyForm):

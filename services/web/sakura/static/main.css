@@ -7,13 +7,10 @@
     z-index: 1050;
 }
 
-.drop-zone {
-    /*width: 300px;*/
-    /*height: 70px;*/
+.drop-zone--over {
+    background-color: #f8f9fa;
 }
 
-.drop-zone--over {
-    /*border: dashed 2px #86989B;*/
-    /*background-color: #eeeeee;*/
-    background-color: #f8f9fa;
+.form-check {
+    list-style-type: none;
 }

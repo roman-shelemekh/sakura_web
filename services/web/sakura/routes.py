@@ -58,8 +58,9 @@ def hairdresser():
 def hairdresser_detail(hairdresser_id):
     hairdresser = Hairdresser.query.get_or_404(hairdresser_id)
     form = HairdresserForm(edit=True)
+
     form.specialization.choices = [(str(row.id), row.name + ' (' + row.service_type.name + ')') for row in
-                                   Service.query.all()]
+                                   Service.query.order_by(Service.type_id).all()]
     if form.validate_on_submit():
         hairdresser.name = form.name.data
         hairdresser.dob = form.dob.data
@@ -70,8 +71,8 @@ def hairdresser_detail(hairdresser_id):
         flash(f'Данные мастера {hairdresser.name} успешно изменены.')
         return redirect(url_for('hairdresser'))
     elif request.method == 'GET':
-        form.specialization.default = [str(i.id) for i in hairdresser.specialization]
-        form.process()
+        form.specialization.data = [str(i.id) for i in hairdresser.specialization]
+        # form.process()
         form.name.data = hairdresser.name
         form.dob.data = hairdresser.dob
         form.comment.data = hairdresser.comment

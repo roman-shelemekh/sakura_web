@@ -40,16 +40,9 @@
         </div>
         {% endif %}
     </div>
-    <div class="form-floating mb-3">
-        {{ form.specialization(class="form-select" + (" is-invalid" if form.specialization.errors else ""), placeholder='Специализация', id='id_specialization', style="height: 200px;") }}
-        <label for="id_specialization">Специализация</label>
-        {% if form.specialization.errors %}
-        <div id="id_specialization" class="invalid-feedback">
-            {% for error in form.specialization.errors %}
-            {{ error }}
-            {% endfor %}
-        </div>
-        {% endif %}
+    <div class="mb-3 form-check">
+        {{ form.specialization.label }}:
+        {{ form.specialization(class="form-check")}}
     </div>
     <div class="d-grid gap-2 mb-3">
         <button class="btn btn-lg btn-primary" type="submit">Добавить</button>
