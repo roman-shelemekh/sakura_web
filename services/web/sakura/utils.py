@@ -42,7 +42,7 @@ class MyDateField(DateField):
 
         date_str = " ".join(valuelist)
         try:
-            self.data = datetime.datetime.strptime(date_str, self.format).date()
+            self.data = datetime.strptime(date_str, self.format).date()
         except ValueError:
             self.data = None
             raise ValueError(self.gettext('Введите корректную дату в формате ДД.ММ.ГГГГ.'))

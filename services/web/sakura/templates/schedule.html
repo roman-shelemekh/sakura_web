@@ -59,14 +59,14 @@
             <tbody>
                 {% for date in dates %}
                 <tr>
-                    <td scope="row"><b>{{ date.date|ru_date }}</b></br>{{ date.date|ru_weekday }}</td>
-                    <td ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="leave(event)" class="drop-zone">
+                    <td ondrop="adjacentDrop(event)" ondragover="allowDrop(event)" ondragleave="leave(event)" class="drop-zone" scope="row"><b>{{ date.date|ru_date }}</b></br>{{ date.date|ru_weekday }}</td>
+                    <td ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="leave(event)" class="drop-zone drop-target">
                         {% for shift in date.shifts %}
                         {% if shift.salon_id == salon_id %}
-                        <div class="card mb-2">
+                        <div class="card mb-2" data-salon="{{ salon_id }}" data-hairdresser="{{ shift.hairdresser_id }}">
                             <div class="card-body">
                                 <a class="text-secondary text-decoration-none" draggable="false" href="{{ url_for('hairdresser_detail', hairdresser_id=shift.hairdresser_shifts.id) }}"><i class="fas fa-cut"></i> {{ shift.hairdresser_shifts }}</a>
-                                <button type="button" class="btn-close float-end" aria-label="Close"></button>
+                                <button onclick="deleteHairdresser(event)" type="button" class="btn-close float-end" aria-label="Close"></button>
                             </div>
                         </div>
                         {% endif %}
@@ -82,7 +82,8 @@
         <div class="border p-3 mt-3 sticky-top overflow-auto ">
             <h6 class="mb-4">Перетащите мастера в нужную ячейку графика</h6>
             {% for hairdresser in hairdressers %}
-            <div class="card mb-2" draggable="true" id="hairdresser_{{ hairdresser.id }}" ondragstart="drag(event)">
+            <div class="card mb-2" draggable="true" ondragstart="drag(event)" id="hairdresser_{{ hairdresser.id }}"
+            data-salon="{{ salon_id }}" data-hairdresser="{{ hairdresser.id }}">
                 <div class="card-body">
                     <a class="text-secondary text-decoration-none" draggable="false" href="{{ url_for('hairdresser_detail', hairdresser_id=hairdresser.id) }}"><i class="fas fa-cut"></i> {{ hairdresser.name }}</a>
                 </div>
@@ -90,6 +91,19 @@
             {% endfor %}
         </div>
     </div>
+</div>
+
+<!-- Toast -->
+<div class="position-fixed bottom-0 start-0 p-3" style="z-index: 1100">
+  <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+      <strong class="me-auto text-primary">Внимание!</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+      Похоже, что этот парикмахер уже работает в этот день
+    </div>
+  </div>
 </div>
 
 

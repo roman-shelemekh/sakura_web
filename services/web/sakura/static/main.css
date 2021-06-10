@@ -8,11 +8,12 @@
 }
 
 .drop-zone {
-    width: 300px;
-    height: 70px;
+    /*width: 300px;*/
+    /*height: 70px;*/
 }
 
 .drop-zone--over {
-    border: dashed 2px #86989B;
-
+    /*border: dashed 2px #86989B;*/
+    /*background-color: #eeeeee;*/
+    background-color: #f8f9fa;
 }

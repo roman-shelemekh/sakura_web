@@ -1,9 +1,14 @@
-from flask import render_template, send_from_directory, flash, redirect, url_for, request
+from flask import (
+    render_template, send_from_directory, flash, redirect, url_for, request, jsonify, abort, make_response
+)
+from sqlalchemy.exc import IntegrityError
 from flask_login import current_user, login_user, logout_user, login_required
 from . import app, db
 from .forms import LoginForm, HairdresserForm, SalonForm, ServiceForm, TypeForm
-from .models import User, Hairdresser, Salon, Service, Type, Calendar
+from .models import User, Hairdresser, Salon, Service, Type, Calendar, Shifts
 from .utils import months_to_navigate, month_for_heading
+from datetime import datetime
+
 
 @app.route("/")
 def index():
@@ -242,3 +247,34 @@ def schedule(year, month, salon_id):
     return render_template('schedule.html', title='График работы', dates=dates, salon_id=salon_id, salons=salons,
                            hairdressers=hairdressers, months_to_navigate=months_to_navigate(year, month),
                            month_for_heading=month_for_heading(year, month))
+
+
+@app.route('/admin/schedule/add', methods=['POST'])
+def add_shift():
+    data = request.get_json()
+    date = datetime.strptime(data.get('date'), '%d.%m.%Y')
+    date_id = Calendar.query.filter(Calendar.date == date).first().id
+    shift = Shifts(salon_id=data.get('salon_id'), hairdresser_id=data.get('hairdresser_id'), date_id=date_id)
+    db.session.add(shift)
+    try:
+        db.session.commit()
+        return jsonify(success=True)
+    except:
+        return jsonify(success=False)
+
+
+@app.route('/admin/schedule/delete', methods=['POST'])
+def delete_shift():
+    data = request.get_json()
+    date = datetime.strptime(data.get('date'), '%d.%m.%Y')
+    date_id = Calendar.query.filter(Calendar.date == date).first().id
+    shift = Shifts.query.filter(Shifts.salon_id == int(data.get('salon_id')),
+                                Shifts.hairdresser_id == int(data.get('hairdresser_id')),
+                                Shifts.date_id == int(date_id)).first()
+    db.session.delete(shift)
+    try:
+        db.session.commit()
+        return jsonify(success=True)
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify(success=False)
