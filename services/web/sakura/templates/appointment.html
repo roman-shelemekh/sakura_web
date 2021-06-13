@@ -71,7 +71,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for appointment in appointments %}
+        {% for appointment in appointments.items %}
         <tr>
             <td><a href=""><i class="text-primary far fa-eye"></i></a></td>
             <td>
@@ -114,6 +114,45 @@
     {% endfor %}
     </tbody>
 </table>
+{% if appointments.pages > 1 %}
+<nav>
+    <ul class="pagination pagination-sm justify-content-center">
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('all_appointments', salon_id=salon_id, start=request.args.get('start'),
+                     end=request.args.get('end'), hairdresser=request.args.get('hairdresser'),
+                     status=request.args.get('status'), page=1) }}">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% if appointments.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('all_appointments', salon_id=salon_id, start=request.args.get('start'),
+                     end=request.args.get('end'), hairdresser=request.args.get('hairdresser'),
+                     status=request.args.get('status'), page=appointments.prev_num) }}">{{ appointments.prev_num }}</a>
+        </li>
+        {% endif %}
+        <li class="page-item active">
+            <a class="page-link" href="{{ url_for('all_appointments', salon_id=salon_id, start=request.args.get('start'),
+                     end=request.args.get('end'), hairdresser=request.args.get('hairdresser'),
+                     status=request.args.get('status'), page=appointments.page) }}">{{ appointments.page }}</a>
+        </li>
+        {% if appointments.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('all_appointments', salon_id=salon_id, start=request.args.get('start'),
+                     end=request.args.get('end'), hairdresser=request.args.get('hairdresser'),
+                     status=request.args.get('status'), page=appointments.next_num) }}">{{ appointments.next_num }}</a>
+        </li>
+        {% endif %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('all_appointments', salon_id=salon_id, start=request.args.get('start'),
+                     end=request.args.get('end'), hairdresser=request.args.get('hairdresser'),
+                     status=request.args.get('status'), page=appointments.pages) }}">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif  %}
 {% endblock %}
 
 {% block script %}

@@ -360,10 +360,7 @@ def all_appointments(salon_id):
         end = datetime.strptime(request.args.get('end'), '%Y-%m-%d')
     except (ValueError, TypeError):
         end = None
-    try:
-        hairdresser = int(request.args.get('hairdresser'))
-    except (ValueError, TypeError):
-        hairdresser = None
+    hairdresser = request.args.get('hairdresser', type=int)
     if request.args.get('status') in [i[0] for i in form.status.choices]:
         status = request.args.get('status')
     else:
@@ -382,5 +379,7 @@ def all_appointments(salon_id):
     elif status == 'unaccomplished':
         appointments = appointments.filter(Appointment.accomplished.is_(False))
 
-    return render_template('appointment.html', title='Записи', appointments=appointments.all(), form=form,
+    page = request.args.get('page', 1, type=int)
+    appointments = appointments.paginate(page, 30, False)
+    return render_template('appointment.html', title='Записи', appointments=appointments, form=form,
                            salons=salons, salon_id=salon_id, hairdressers=hairdressers)
