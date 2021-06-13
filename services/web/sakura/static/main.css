@@ -7,10 +7,6 @@
     z-index: 1050;
 }
 
-.drop-zone--over {
-    background-color: #f8f9fa;
-}
-
 .form-check {
     list-style-type: none;
 }

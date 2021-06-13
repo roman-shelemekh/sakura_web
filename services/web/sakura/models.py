@@ -4,6 +4,7 @@ from flask_login import UserMixin
 from . import login
 from datetime import datetime
 from calendar import monthrange
+from sqlalchemy import CheckConstraint
 
 
 @login.user_loader
@@ -53,7 +54,6 @@ class Service(db.Model):
     name = db.Column(db.String(128), nullable=False)
     price = db.Column(db.Float)
     type_id = db.Column(db.Integer, db.ForeignKey('type.id', ondelete='SET NULL'))
-    appointments = db.relationship('Appointment', backref='service_appointment', lazy=True)
 
     def __repr__(self):
         return self.name
@@ -85,23 +85,34 @@ class Hairdresser(db.Model):
 
 class Client(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), unique=True, nullable=False)
-    phone_number = db.Column(db.String(32), unique=True, nullable=False)
-    discount = db.Column(db.Integer)
+    name = db.Column(db.String(128), nullable=False)
+    phone_number = db.Column(db.String(13), unique=True, nullable=False)
+    discount = db.Column(db.Integer, default=0)
     appointments = db.relationship('Appointment', backref='client_appointment', lazy=True)
 
+    __table_args__ = (CheckConstraint("discount<=100", name='discount_constraint'),)
+
     def __repr__(self):
-        return self.name
+        return self.phone_number
+
+
+service_to_appointment = db.Table('service_to_appointment',
+    db.Column('appointment_id', db.Integer, db.ForeignKey('appointment.id'), primary_key=True),
+    db.Column('service_id', db.Integer, db.ForeignKey('service.id'), primary_key=True)
+)
 
 
 class Appointment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date)
+    date = db.Column(db.Date, nullable=False)
     time = db.Column(db.Time)
     salon_id = db.Column(db.Integer, db.ForeignKey('salon.id'), nullable=False)
-    client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
     hairdresser_id = db.Column(db.Integer, db.ForeignKey('hairdresser.id', ondelete='SET NULL'))
-    service_id = db.Column(db.Integer, db.ForeignKey('service.id'))
+    comment = db.Column(db.String(500))
+    accomplished = db.Column(db.Boolean(), default=True)
+    service_to_appointment = db.relationship('Service', secondary=service_to_appointment, lazy='subquery',
+                                             backref=db.backref('service_appointment', lazy=True))
 
 
 class Calendar(db.Model):

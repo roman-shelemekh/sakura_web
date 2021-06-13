@@ -1,9 +1,10 @@
 from flask_wtf import FlaskForm
 from wtforms import (
-    widgets, StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField, SelectMultipleField
+    widgets, StringField, PasswordField, BooleanField, SubmitField, TextAreaField, SelectField, SelectMultipleField,
+    IntegerField, ValidationError, DateField, RadioField
 )
 from wtforms.validators import DataRequired, Length, Optional
-from .models import User, Hairdresser, Salon, Service, Type
+from .models import User, Hairdresser, Salon, Client
 from .utils import Unique, MyForm, MyDateField, MyFloatField
 
 
@@ -81,3 +82,28 @@ class TypeForm(MyForm):
     name = StringField('Название',
                        validators=[DataRequired(message='Обязательное поле.'),
                                    Length(min=0, max=40, message='Поле "Название" не должно превышать 40 знаков.')])
+
+
+class ClientForm(MyForm):
+    name = StringField('Имя', validators=[DataRequired(message='Обязательное поле.'),
+                                          Length(min=0, max=128,
+                                                 message='Поле "Имя" не должно превышать 128 знаков.')])
+    phone_number = StringField('Номер телефона',
+                               validators=[Unique(object_class=Client, column='phone_number',
+                                                  message='Клиент с таким номером телефона уже существует.'),
+                                           Length(min=0, max=13, message='Поле "Номер телефона" не должно '
+                                                                         'превышать 13 знаков (+375XXXXXXXXX).')])
+    discount = IntegerField('Скидка', validators=[Optional()])
+
+    def validate_discount(form, field):
+        if field.data and field.data > 100:
+            raise ValidationError('Скидка не может быть более 100%.')
+
+
+class AppointmentFilterForm(MyForm):
+    start = MyDateField('Начало', validators=[Optional()], format='%Y-%m-%d')
+    end = MyDateField('Конец', validators=[Optional()])
+    hairdresser = SelectField('Мастер')
+    status = RadioField('Статус', choices=[
+        ('accomplished', 'состоявшиеся'), ('unaccomplished', 'несостоявшиеся'), ('all', 'все'),
+    ])

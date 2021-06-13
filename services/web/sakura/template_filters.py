@@ -7,6 +7,12 @@ def format_date(value):
         value = value.strftime('%d.%m.%Y')
     return value
 
+@app.template_filter('ru_time')
+def format_time(value):
+    if isinstance(value, datetime.time):
+        value = value.strftime('%H:%M')
+    return value
+
 @app.template_filter('ru_weekday')
 def format_date(value):
     weekdays = ['понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресенье']

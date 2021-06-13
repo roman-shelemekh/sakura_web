@@ -15,7 +15,7 @@
         </select>
     </div>
 </div>
-<!--Новегация по месяцам-->
+<!--Навигация по месяцам-->
 <div class="pb-2">
     <ul class="nav nav-tabs">
         <li class="nav-item dropdown">
@@ -23,7 +23,7 @@
             <ul class="dropdown-menu">
                 {% for month in months_to_navigate[:3]|reverse %}
                 <li>
-                    <a class="dropdown-item" href="{{ url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
+                    <a class="dropdown-item {% if request.path == url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) %}active{% endif %}" href="{{ url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
                 </li>
                 {% endfor %}
             </ul>
@@ -38,7 +38,7 @@
             <ul class="dropdown-menu">
                 {% for month in months_to_navigate[8:] %}
                 <li>
-                    <a class="dropdown-item" href="{{ url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
+                    <a class="dropdown-item {% if request.path == url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) %}active{% endif %}" href="{{ url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
                 </li>
                 {% endfor %}
             </ul>
@@ -49,16 +49,18 @@
 <div class="row">
 <!--    Календарь-->
     <div class="col-7 mt-3">
-        <table class="table">
+        <table class="table align-middle">
             <thead>
                 <tr>
+                    <th scope="col"></th>
                     <th scope="col">Дата</th>
                     <th scope="col">Мастера</th>
                 </tr>
             </thead>
             <tbody>
                 {% for date in dates %}
-                <tr>
+                <tr class="{% if date.date.strftime('%d.%m.%Y') == current_date %}table-light{% endif %}">
+                    <td><a href="#"><i class="far fa-calendar-alt"></i></a></td>
                     <td ondrop="adjacentDrop(event)" ondragover="allowDrop(event)" ondragleave="leave(event)" class="drop-zone" scope="row"><b>{{ date.date|ru_date }}</b></br>{{ date.date|ru_weekday }}</td>
                     <td ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="leave(event)" class="drop-zone drop-target">
                         {% for shift in date.shifts %}
@@ -97,12 +99,10 @@
 <div class="position-fixed bottom-0 start-0 p-3" style="z-index: 1100">
   <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
     <div class="toast-header">
-      <strong class="me-auto text-primary">Внимание!</strong>
+      <strong class="me-auto text-primary"><i class="fas fa-exclamation-triangle pe-2"></i>Внимание</strong>
       <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
-    <div class="toast-body">
-      Похоже, что этот мастер уже зянят в этот день
-    </div>
+    <div class="toast-body">Выбранный мастер в этот день зянят </div>
   </div>
 </div>
 

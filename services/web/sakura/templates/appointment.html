@@ -1,0 +1,121 @@
+{% extends "admin.html" %}
+
+{% block right_column %}
+
+<!--Переключение парикмахерских-->
+<div class="row mb-3">
+    <div class="col-8">
+        <h3 class="mb-3">Посещения</h3>
+    </div>
+    <div class="col-4">
+        <select class="form-select float-end" id="selectSalon">
+            {% for salon in salons %}
+            <option value="{{ url_for('all_appointments', salon_id=salon.id) }}" {% if salon_id == salon.id %} selected="true" {% endif %}> {{ salon.name }} </option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+<!--Фильтр-->
+<!--<form method="POST" class="mb-3 needs-validation" novalidate>-->
+<!--    <div class="row align-items-center">-->
+<!--        <div class="col-auto">Перейти к журналу за рабочий день на дату</div>-->
+<!--        <div class="col-3">-->
+<!--            <input class="form-control" name="date" required type="date">-->
+<!--        </div>-->
+<!--        <div class="col-3"><button type="submit" class="btn btn-primary">Перейти</button></div>-->
+<!--    </div>-->
+<!--</form>-->
+
+<form class="mb-3 bg-light rounded p-4" novalidate>
+    <h6>Найти посещения</h6>
+    <div class="row align-items-center mb-2 gx-1">
+        <div class="col-auto">в период с</div>
+        <div class="col-3">
+            {{ form.start(class="form-control form-control-sm", type="date") }}
+        </div>
+        <div class="col-auto">по</div>
+        <div class="col-3">
+            {{ form.end(class="form-control form-control-sm", type="date") }}
+        </div>
+        <div class="col-auto">у мастера</div>
+        <div class="col-auto">
+            {{ form.hairdresser(class="form-select form-select-sm") }}
+        </div>
+    </div>
+    <div class="row align-items-center mb-2 gx-1">
+        <div class="col-auto">со статусом: </div>
+        <div class="col-auto">
+            {% for subfield in form.status %}
+            {{ subfield() }}
+            {{ subfield.label }}
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-outline-primary btn-sm"><i class="fas fa-search"></i> Поиск</button></div>
+</form>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col"></th>
+            <th scope="col">Дата</th>
+            <th scope="col">Время</th>
+            <th scope="col">Мастер</th>
+            <th scope="col">Клиент</th>
+            <th scope="col">Услуги</th>
+            <th scope="col">Сумма</th>
+            <th scope="col"></th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for appointment in appointments %}
+        <tr>
+            <td><a href=""><i class="text-primary far fa-eye"></i></a></td>
+            <td>
+                {% if appointment.date %}{{ appointment.date|ru_date }}{% else %} - {% endif %}
+            </td>
+            <td>
+                {% if appointment.time %}{{ appointment.time|ru_time }}{% else %} - {% endif %}
+            </td>
+            <td>
+                {% if appointment.hairdresser_appointment %}{{ appointment.hairdresser_appointment }}{% else %} - {% endif %}
+            </td>
+            <td>
+                {% if appointment.client_appointment %}{{ appointment.client_appointment }}{% else %} - {% endif %}
+            </td>
+            <td>
+                {% if appointment.service_to_appointment %}
+                <ul class="list-unstyled">
+                {% for service in appointment.service_to_appointment  %}
+                <li>{{ service }}</li>
+                {% endfor %}
+                </ul>
+                {% else %} -
+                {% endif %}
+            </td>
+            <td>
+                {% set priceTotal = namespace(sum=0.0) %}
+                {% if appointment.service_to_appointment %}
+                    {% for service in appointment.service_to_appointment  %}
+                    {% set priceTotal.sum = priceTotal.sum + service.price|float %}
+                    {% endfor %}
+                {{ priceTotal.sum }}
+                {% else %} -
+                {% endif %}
+            </td>
+            <td>{% if appointment.accomplished %} <i class="text-success far fa-check-circle"></i> {% else %} <i class="far fa-question-circle text-warning"></i> {% endif %}</i></td>
+            <td>
+                {% if appointment.comment %}<a tabindex="0" class="" role="button" {% if appointment.comment %} data-bs-toggle="popover" data-bs-trigger="focus" title="Комментарий" data-bs-content="{{ appointment.comment }}"{% endif %}><i class="far fa-comment-alt"></i></a>{% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript" src="{{ url_for('staticfiles', filename='appointment.js') }}"></script>
+{% endblock %}

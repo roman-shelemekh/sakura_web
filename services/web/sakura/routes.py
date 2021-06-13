@@ -1,11 +1,11 @@
 from flask import (
-    render_template, send_from_directory, flash, redirect, url_for, request, jsonify, abort, make_response
+    render_template, send_from_directory, flash, redirect, url_for, request, jsonify
 )
 from sqlalchemy.exc import IntegrityError
 from flask_login import current_user, login_user, logout_user, login_required
 from . import app, db
-from .forms import LoginForm, HairdresserForm, SalonForm, ServiceForm, TypeForm
-from .models import User, Hairdresser, Salon, Service, Type, Calendar, Shifts
+from .forms import LoginForm, HairdresserForm, SalonForm, ServiceForm, TypeForm, ClientForm, AppointmentFilterForm
+from .models import User, Hairdresser, Salon, Service, Type, Calendar, Shifts, Client, Appointment
 from .utils import months_to_navigate, month_for_heading
 from datetime import datetime
 
@@ -176,8 +176,19 @@ def service():
 @login_required
 def service_by_type(type_id):
     types = Type.query.all()
-    type = Type.query.get_or_404(type_id)
-    return render_template('service.html', title=type.name, serviсes=type.services, types=types)
+    service_type = Type.query.get_or_404(type_id)
+    delete_type = request.path
+    return render_template('service.html', title=service_type.name.capitalize(), serviсes=service_type.services, types=types,
+                           delete_type=delete_type)
+
+@app.route('/admin/service/type/<int:type_id>/delete')
+@login_required
+def delete_type(type_id):
+    service_type = Type.query.get_or_404(type_id)
+    db.session.delete(service_type)
+    db.session.commit()
+    flash(f'Тип услуг "{service_type.name}" успешно удалем.')
+    return redirect(url_for('service'))
 
 
 @app.route('/admin/service/<int:service_id>', methods=['GET', 'POST'])
@@ -187,7 +198,7 @@ def service_detail(service_id):
     form = ServiceForm(edit=True)
     form.type.choices = [(str(row.id), row.name) for row in Type.query.all()]
     if form.validate_on_submit():
-        service.name = form.name.data
+        service.name = form.name.data.capitalize()
         service.price = form.price.data
         service.type_id = form.type.data
         db.session.commit()
@@ -208,7 +219,7 @@ def add_service():
     form = ServiceForm()
     form.type.choices = [(str(row.id), row.name) for row in Type.query.all()]
     if form.validate_on_submit():
-        service = Service(name=form.name.data, price=form.price.data, type_id=form.type.data)
+        service = Service(name=form.name.data.capitalize(), price=form.price.data, type_id=form.type.data)
         db.session.add(service)
         db.session.commit()
         flash(f'Услуга {service.name} успешно добавлена.')
@@ -222,7 +233,7 @@ def delete_service(service_id):
     service = Service.query.get_or_404(service_id)
     db.session.delete(service)
     db.session.commit()
-    flash(f'Услуга "{service.name}" удалена.')
+    flash(f'Услуга "{service.name.capitalize()}" удалена.')
     return redirect(url_for('service'))
 
 
@@ -231,7 +242,7 @@ def delete_service(service_id):
 def service_type_add():
     form = TypeForm()
     if form.validate_on_submit():
-        type = Type(name=form.name.data)
+        type = Type(name=form.name.data.lower())
         db.session.add(type)
         db.session.commit()
         flash(f'Тип услуг {type.name} успешно добавлен.')
@@ -261,6 +272,7 @@ def add_shift():
         db.session.commit()
         return jsonify(success=True)
     except:
+        db.session.rollback()
         return jsonify(success=False)
 
 
@@ -279,3 +291,96 @@ def delete_shift():
     except IntegrityError:
         db.session.rollback()
         return jsonify(success=False)
+
+
+@app.route('/admin/client')
+@login_required
+def client():
+    clients = Client.query.all()
+    return render_template('client.html', title='Клиенты', clients=clients)
+
+
+@app.route('/admin/client/add', methods=['GET', 'POST'])
+@login_required
+def add_client():
+    form = ClientForm()
+    if form.validate_on_submit():
+        client = Client(name=form.name.data, phone_number=form.phone_number.data, discount=form.discount.data)
+        db.session.add(client)
+        db.session.commit()
+        flash(f'Клиент "{client.name}" успешно добавлен.')
+        return redirect(url_for('client'))
+    return render_template('client_add.html', title='Новый клиент', form=form)
+
+
+@app.route('/admin/client/<int:client_id>', methods=['GET', 'POST'])
+@login_required
+def client_detail(client_id):
+    client = Client.query.get_or_404(client_id)
+    form = ClientForm(edit=True)
+    if form.validate_on_submit():
+        client.name = form.name.data
+        client.phone_number = form.phone_number.data
+        client.discount = form.discount.data
+        db.session.commit()
+        flash(f'Данные о клиенте "{client.name}" успешно изменены.')
+        return redirect(url_for('client'))
+    elif request.method == 'GET':
+        form.name.data = client.name
+        form.phone_number.data = client.phone_number
+        form.discount.data = client.discount
+    return render_template('client_detail.html', title=f'Клиент {client.name}',
+                           client=client, form=form)
+
+
+@app.route('/admin/client/<int:client_id>/delete')
+@login_required
+def delete_client(client_id):
+    client = Client.query.get_or_404(client_id)
+    db.session.delete(client)
+    db.session.commit()
+    flash(f'Запись о клиенте "{client.name}" удалена.')
+    return redirect(url_for('client'))
+
+
+@app.route('/admin/appointment/<int:salon_id>')
+@login_required
+def all_appointments(salon_id):
+    salons = Salon.query.all()
+    Salon.query.get_or_404(salon_id)
+    appointments = Appointment.query.filter(Appointment.salon_id == salon_id).order_by(Appointment.date.desc())
+    hairdressers = Hairdresser.query.all()
+    form = AppointmentFilterForm(request.args)
+    form.hairdresser.choices = [('', '--выбрать--')] + [(i.id, i.name) for i in Hairdresser.query.all()]
+    try:
+        start = datetime.strptime(request.args.get('start'), '%Y-%m-%d')
+    except (ValueError, TypeError):
+        start = None
+    try:
+        end = datetime.strptime(request.args.get('end'), '%Y-%m-%d')
+    except (ValueError, TypeError):
+        end = None
+    try:
+        hairdresser = int(request.args.get('hairdresser'))
+    except (ValueError, TypeError):
+        hairdresser = None
+    if request.args.get('status') in [i[0] for i in form.status.choices]:
+        status = request.args.get('status')
+    else:
+        status = None
+    form.hairdresser.default = hairdresser
+    form.status.default = status or 'all'
+    form.process()
+    form.start.data = start
+    form.end.data = end
+    if start and end:
+        appointments = appointments.filter(Appointment.date.between(start, end))
+    if hairdresser and Hairdresser.query.get(hairdresser):
+        appointments = appointments.filter(Appointment.hairdresser_id == int(hairdresser))
+    if status == 'accomplished':
+        appointments = appointments.filter(Appointment.accomplished)
+    elif status == 'unaccomplished':
+        appointments = appointments.filter(Appointment.accomplished.is_(False))
+
+    return render_template('appointment.html', title='Записи', appointments=appointments.all(), form=form,
+                           salons=salons, salon_id=salon_id, hairdressers=hairdressers)

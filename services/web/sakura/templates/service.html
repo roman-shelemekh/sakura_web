@@ -34,11 +34,15 @@
         <tr>
             <th scope="row">{{ loop.index }}</th>
             <td><a href="{{ url_for('service_detail', service_id=service.id) }}">{{ service.name }}</a></td>
-            <td>{{ service.service_type.name }}</td>
+            <td>{% if service.service_type.name %}{{ service.service_type.name }}{% else %} - {% endif %}</td>
             <td>{% if service.price %}{{ service.price }}{% else %} - {% endif %}</td>
         </tr>
     {% endfor %}
     </tbody>
 </table>
-
+{% if delete_type %}
+<div>
+    <a href="{{ delete_type }}/delete" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Вы уверены?');"><i class="far fa-trash-alt pe-2"></i>Удалить тип услуг "{{ title }}"</a>
+</div>
+{% endif %}
 {% endblock %}

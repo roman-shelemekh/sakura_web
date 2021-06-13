@@ -1,0 +1,31 @@
+{% extends "admin.html" %}
+
+{% block right_column %}
+<div>
+    <a href="{{ url_for('add_client') }}" class="btn btn-outline-primary btn-sm float-end"><i class="fas fa-plus-circle pe-2"></i>Добавить клиента</a>
+    <h3 class="mb-3">Клиенты</h3>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Имя</th>
+            <th scope="col">Номер телефона</th>
+            <th scope="col">Скидка</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for client in clients %}
+        <tr>
+            <th scope="row">{{ loop.index }}</th>
+            <td><a href="{{ url_for('client_detail', client_id=client.id) }}">{{ client.name }}</a></td>
+            <td>{{ client.phone_number }}</td>
+
+            <td>{% if client.discount %}{{ client.discount }}{% else %} - {% endif %}</td>
+            <td><i class="fas fa-history"></i></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

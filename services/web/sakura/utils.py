@@ -3,7 +3,7 @@ import datetime
 from flask_wtf import FlaskForm
 from wtforms import ValidationError
 from dateutil.relativedelta import relativedelta
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 
 class MyForm(FlaskForm):
@@ -63,6 +63,9 @@ class MyFloatField(FloatField):
 month_names = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь',
                        'ноябрь', 'декабрь']
 
+
+# навигация по графику работы
+
 def months_to_navigate(year, month):
     current_month_start = datetime(date.today().year, date.today().month, 1)
     past_months = list(reversed([(i.year, i.month, month_names[i.month - 1] + ' ' + str(i.year)) for i
@@ -73,3 +76,18 @@ def months_to_navigate(year, month):
 
 def month_for_heading(year, month):
     return month_names[month-1] + ' ' + str(year)
+
+
+# навигация по записям
+
+def periods_to_navigate():
+    today = datetime.today()
+    periods = [('', 'Все'),
+               ((today - timedelta(days=1)).strftime('%Y/%m/%d'), 'Вчера'),
+               (today.strftime('%Y/%m/%d'), 'Сегодня'),
+               ((today + timedelta(days=1)).strftime('%Y/%m/%d'), 'Завтра'),
+               (f'?start={today.strftime("%Y-%m-%d")}&end={(today + timedelta(days=7)).strftime("%Y-%m-%d")}', 'В течение недели'),
+               (f'?start={today.strftime("%Y-%m-%d")}&end={(today + timedelta(days=30)).strftime("%Y-%m-%d")}', 'В течение месяца')]
+    return periods
+
+

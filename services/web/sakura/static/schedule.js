@@ -9,7 +9,7 @@ salon.addEventListener('change', e => {
 function allowDrop(event) {
     if (!event.target.matches('.drop-zone')) return;
     event.preventDefault()
-    event.target.parentElement.classList.add("drop-zone--over")
+    event.target.parentElement.classList.add("table-light")
 }
 
 function drag(event) {
@@ -17,7 +17,7 @@ function drag(event) {
 }
 
 function leave(event) {
-    event.target.parentElement.classList.remove("drop-zone--over")
+    event.target.parentElement.classList.remove("table-light")
 }
 
 function drop(event) {
@@ -85,7 +85,7 @@ function postShift(salon_id, hairdresser_id, date, url){
 
 function dropPrep(event){
     event.preventDefault()
-    event.target.parentElement.classList.remove("drop-zone--over")
+    event.target.parentElement.classList.remove("table-light")
     const elementToDrop = document.getElementById(event.dataTransfer.getData("text")).cloneNode(true)
     elementToDrop.draggable = false
     elementToDrop.id = ''
