@@ -18,7 +18,7 @@
         {% for salon in salons %}
         <tr>
             <th scope="row">{{ loop.index }}</th>
-            <td><a href="{{ url_for('salon_detail', salon_id=salon.id) }}">{{ salon }}</a></td>
+            <td><a href="{{ url_for('salon_detail', salon_translit=salon.translit) }}">{{ salon }}</a></td>
             <td>{{ salon.address }}</td>
             <td>{% if salon.phone_number %}{{ salon.phone_number }}{% else %} - {% endif %}</td>
         </tr>

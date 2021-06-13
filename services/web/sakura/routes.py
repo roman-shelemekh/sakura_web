@@ -8,6 +8,7 @@ from .forms import LoginForm, HairdresserForm, SalonForm, ServiceForm, TypeForm,
 from .models import User, Hairdresser, Salon, Service, Type, Calendar, Shifts, Client, Appointment
 from .utils import months_to_navigate, month_for_heading
 from datetime import datetime
+from transliterate import translit
 
 
 @app.route("/")
@@ -116,10 +117,10 @@ def salon():
     return render_template('salon.html', title='Парикмахерские', salons=salons)
 
 
-@app.route('/admin/salon/<int:salon_id>', methods=['GET', 'POST'])
+@app.route('/admin/salon/<salon_translit>', methods=['GET', 'POST'])
 @login_required
-def salon_detail(salon_id):
-    salon = Salon.query.get_or_404(salon_id)
+def salon_detail(salon_translit):
+    salon = Salon.query.filter(Salon.translit == salon_translit).first_or_404()
     form = SalonForm(edit=True)
     if form.validate_on_submit():
         salon.name = form.name.data
@@ -140,10 +141,10 @@ def salon_detail(salon_id):
                            salon=salon, form=form)
 
 
-@app.route('/admin/salon/<int:salon_id>/delete')
+@app.route('/admin/salon/<salon_translit>/delete')
 @login_required
-def delete_salon(salon_id):
-    salon = Salon.query.get_or_404(salon_id)
+def delete_salon(salon_translit):
+    salon = Salon.query.filter(Salon.translit == salon_translit).first_or_404()
     db.session.delete(salon)
     db.session.commit()
     flash(f'Запись о парикмахерской "{salon.name}" удалена.')
@@ -155,8 +156,9 @@ def delete_salon(salon_id):
 def add_salon():
     form = SalonForm()
     if form.validate_on_submit():
+        name_translit = translit(form.name.data, 'ru', reversed=True).replace(' ', '_').replace('.', '').lower()
         salon = Salon(name=form.name.data, address = form.address.data, phone_number=form.phone_number.data,
-                      latitude=form.latitude.data, longitude=form.longitude.data)
+                      latitude=form.latitude.data, longitude=form.longitude.data, translit=name_translit)
         db.session.add(salon)
         db.session.commit()
         flash(f'Парикмахерская "{salon.name}" успешно добавлена.')
@@ -250,15 +252,16 @@ def service_type_add():
     return render_template('service_type_add.html', title='Новый тип услуг', form=form)
 
 
-@app.route('/admin/schedule/<int:salon_id>/<int:year>/<int:month>')
+@app.route('/admin/schedule/<salon_translit>/<int:year>/<int:month>')
 @login_required
-def schedule(year, month, salon_id):
+def schedule(year, month, salon_translit):
+    salon = Salon.query.filter(Salon.translit == salon_translit).first_or_404()
     salons = Salon.query.all()
     hairdressers = Hairdresser.query.filter(Hairdresser.is_available == True).all()
     dates = Calendar().month(year, month)
-    return render_template('schedule.html', title='График работы', dates=dates, salon_id=salon_id, salons=salons,
-                           hairdressers=hairdressers, months_to_navigate=months_to_navigate(year, month),
-                           month_for_heading=month_for_heading(year, month))
+    return render_template('schedule.html', title='График работы', dates=dates, salon_translit=salon_translit,
+                           salons=salons, month_for_heading=month_for_heading(year, month), salon_id=salon.id,
+                           hairdressers=hairdressers, months_to_navigate=months_to_navigate(year, month))
 
 
 @app.route('/admin/schedule/add', methods=['POST'])
@@ -343,12 +346,13 @@ def delete_client(client_id):
     return redirect(url_for('client'))
 
 
-@app.route('/admin/appointment/<int:salon_id>')
+@app.route('/admin/appointment/<salon_translit>')
 @login_required
-def all_appointments(salon_id):
+def all_appointments(salon_translit):
     salons = Salon.query.all()
-    Salon.query.get_or_404(salon_id)
-    appointments = Appointment.query.filter(Appointment.salon_id == salon_id).order_by(Appointment.date.desc())
+    salon_id = Salon.query.filter(Salon.translit == salon_translit).first_or_404().id
+    appointments = Appointment.query.filter(Appointment.salon_id == salon_id).order_by(Appointment.date.desc())\
+        .order_by(Appointment.time.desc())
     hairdressers = Hairdresser.query.all()
     form = AppointmentFilterForm(request.args)
     form.hairdresser.choices = [('', '--выбрать--')] + [(i.id, i.name) for i in Hairdresser.query.all()]
@@ -381,5 +385,6 @@ def all_appointments(salon_id):
 
     page = request.args.get('page', 1, type=int)
     appointments = appointments.paginate(page, 30, False)
-    return render_template('appointment.html', title='Записи', appointments=appointments, form=form,
-                           salons=salons, salon_id=salon_id, hairdressers=hairdressers)
+    return render_template('appointment.html', title='Посещения', appointments=appointments, form=form,
+                           salons=salons, salon_id=salon_id, salon_translit=salon_translit,
+                           hairdressers=hairdressers)

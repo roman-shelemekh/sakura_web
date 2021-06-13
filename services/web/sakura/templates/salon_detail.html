@@ -64,6 +64,6 @@
     </div>
 </form>
 <div class="d-grid gap-2 mb-3">
-    <a href="{{ url_for('delete_salon', salon_id=salon.id) }}" class="btn btn-lg btn-danger" onclick="return confirm('Вы уверены?');">Удалить запись</a>
+    <a href="{{ url_for('delete_salon', salon_translit=salon.translit) }}" class="btn btn-lg btn-danger" onclick="return confirm('Вы уверены?');">Удалить запись</a>
 </div>
 {% endblock %}

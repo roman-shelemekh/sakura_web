@@ -35,6 +35,7 @@ class Salon(db.Model):
     phone_number = db.Column(db.String(13))
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
+    translit = db.Column(db.String)
     appointments = db.relationship('Appointment', backref='salon_appointment', lazy=True)
     shifts = db.relationship('Shifts', backref='salon_shifts', lazy=True)
     __table_args__ = (db.UniqueConstraint('latitude', 'longitude'),)
@@ -44,8 +45,8 @@ class Salon(db.Model):
 
 
 specialization = db.Table('specialization',
-    db.Column('service_id', db.Integer, db.ForeignKey('service.id'), primary_key=True),
-    db.Column('hairdresser_id', db.Integer, db.ForeignKey('hairdresser.id'), primary_key=True)
+    db.Column('service_id', db.Integer, db.ForeignKey('service.id', ondelete='CASCADE'), primary_key=True),
+    db.Column('hairdresser_id', db.Integer, db.ForeignKey('hairdresser.id', ondelete='CASCADE'), primary_key=True)
 )
 
 
@@ -97,8 +98,8 @@ class Client(db.Model):
 
 
 service_to_appointment = db.Table('service_to_appointment',
-    db.Column('appointment_id', db.Integer, db.ForeignKey('appointment.id'), primary_key=True),
-    db.Column('service_id', db.Integer, db.ForeignKey('service.id'), primary_key=True)
+    db.Column('appointment_id', db.Integer, db.ForeignKey('appointment.id', ondelete='CASCADE'), primary_key=True),
+    db.Column('service_id', db.Integer, db.ForeignKey('service.id', ondelete='CASCADE'), primary_key=True)
 )
 
 
@@ -106,8 +107,8 @@ class Appointment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False)
     time = db.Column(db.Time)
-    salon_id = db.Column(db.Integer, db.ForeignKey('salon.id'), nullable=False)
-    client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
+    salon_id = db.Column(db.Integer, db.ForeignKey('salon.id', ondelete='SET NULL'))
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id', ondelete='SET NULL'))
     hairdresser_id = db.Column(db.Integer, db.ForeignKey('hairdresser.id', ondelete='SET NULL'))
     comment = db.Column(db.String(500))
     accomplished = db.Column(db.Boolean(), default=True)
@@ -134,6 +135,6 @@ class Calendar(db.Model):
 class Shifts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date_id = db.Column(db.Integer, db.ForeignKey('calendar.id'))
-    hairdresser_id = db.Column(db.Integer, db.ForeignKey('hairdresser.id'))
-    salon_id = db.Column(db.Integer, db.ForeignKey('salon.id'))
+    hairdresser_id = db.Column(db.Integer, db.ForeignKey('hairdresser.id', ondelete='CASCADE'))
+    salon_id = db.Column(db.Integer, db.ForeignKey('salon.id', ondelete='CASCADE'))
     __table_args__ = (db.UniqueConstraint('date_id', 'hairdresser_id'),)

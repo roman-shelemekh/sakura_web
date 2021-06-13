@@ -10,7 +10,7 @@
     <div class="col-4">
         <select class="form-select float-end" id="selectSalon">
             {% for salon in salons %}
-            <option value="{{ url_for('schedule', salon_id=salon.id, year=current_year, month=current_month) }}" {% if salon_id == salon.id %} selected="true" {% endif %}> {{ salon.name }} </option>
+            <option value="{{ url_for('schedule', salon_translit=salon.translit, year=current_year, month=current_month) }}" {% if salon_translit == salon.translit %} selected="true" {% endif %}> {{ salon.name }} </option>
             {% endfor %}
         </select>
     </div>
@@ -23,14 +23,14 @@
             <ul class="dropdown-menu">
                 {% for month in months_to_navigate[:3]|reverse %}
                 <li>
-                    <a class="dropdown-item {% if request.path == url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) %}active{% endif %}" href="{{ url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
+                    <a class="dropdown-item {% if request.path == url_for('schedule', salon_translit=salon_translit, year=month[0], month=month[1]) %}active{% endif %}" href="{{ url_for('schedule', salon_translit=salon_translit, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
                 </li>
                 {% endfor %}
             </ul>
         </li>
         {% for month in months_to_navigate[3:8] %}
         <li class="nav-item">
-            <a class="nav-link {% if request.path == url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) %}active{% endif %}" href="{{ url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
+            <a class="nav-link {% if request.path == url_for('schedule', salon_translit=salon_translit, year=month[0], month=month[1]) %}active{% endif %}" href="{{ url_for('schedule', salon_translit=salon_translit, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
         </li>
         {% endfor %}
         <li class="nav-item dropdown">
@@ -38,7 +38,7 @@
             <ul class="dropdown-menu">
                 {% for month in months_to_navigate[8:] %}
                 <li>
-                    <a class="dropdown-item {% if request.path == url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) %}active{% endif %}" href="{{ url_for('schedule', salon_id=salon_id, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
+                    <a class="dropdown-item {% if request.path == url_for('schedule', salon_translit=salon_translit, year=month[0], month=month[1]) %}active{% endif %}" href="{{ url_for('schedule', salon_translit=salon_translit, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
                 </li>
                 {% endfor %}
             </ul>

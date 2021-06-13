@@ -10,7 +10,7 @@
     <div class="col-4">
         <select class="form-select float-end" id="selectSalon">
             {% for salon in salons %}
-            <option value="{{ url_for('all_appointments', salon_id=salon.id) }}" {% if salon_id == salon.id %} selected="true" {% endif %}> {{ salon.name }} </option>
+            <option value="{{ url_for('all_appointments', salon_translit=salon.translit) }}" {% if salon_translit == salon.translit %} selected="true" {% endif %}> {{ salon.name }} </option>
             {% endfor %}
         </select>
     </div>
@@ -118,7 +118,7 @@
 <nav>
     <ul class="pagination pagination-sm justify-content-center">
         <li class="page-item">
-            <a class="page-link" href="{{ url_for('all_appointments', salon_id=salon_id, start=request.args.get('start'),
+            <a class="page-link" href="{{ url_for('all_appointments', salon_translit=salon_translit, start=request.args.get('start'),
                      end=request.args.get('end'), hairdresser=request.args.get('hairdresser'),
                      status=request.args.get('status'), page=1) }}">
                 <span aria-hidden="true">&laquo;</span>
@@ -126,25 +126,25 @@
         </li>
         {% if appointments.has_prev %}
         <li class="page-item">
-            <a class="page-link" href="{{ url_for('all_appointments', salon_id=salon_id, start=request.args.get('start'),
+            <a class="page-link" href="{{ url_for('all_appointments', salon_translit=salon_translit, start=request.args.get('start'),
                      end=request.args.get('end'), hairdresser=request.args.get('hairdresser'),
                      status=request.args.get('status'), page=appointments.prev_num) }}">{{ appointments.prev_num }}</a>
         </li>
         {% endif %}
         <li class="page-item active">
-            <a class="page-link" href="{{ url_for('all_appointments', salon_id=salon_id, start=request.args.get('start'),
+            <a class="page-link" href="{{ url_for('all_appointments', salon_translit=salon_translit, start=request.args.get('start'),
                      end=request.args.get('end'), hairdresser=request.args.get('hairdresser'),
                      status=request.args.get('status'), page=appointments.page) }}">{{ appointments.page }}</a>
         </li>
         {% if appointments.has_next %}
         <li class="page-item">
-            <a class="page-link" href="{{ url_for('all_appointments', salon_id=salon_id, start=request.args.get('start'),
+            <a class="page-link" href="{{ url_for('all_appointments', salon_translit=salon_translit, start=request.args.get('start'),
                      end=request.args.get('end'), hairdresser=request.args.get('hairdresser'),
                      status=request.args.get('status'), page=appointments.next_num) }}">{{ appointments.next_num }}</a>
         </li>
         {% endif %}
         <li class="page-item">
-            <a class="page-link" href="{{ url_for('all_appointments', salon_id=salon_id, start=request.args.get('start'),
+            <a class="page-link" href="{{ url_for('all_appointments', salon_translit=salon_translit, start=request.args.get('start'),
                      end=request.args.get('end'), hairdresser=request.args.get('hairdresser'),
                      status=request.args.get('status'), page=appointments.pages) }}">
                 <span aria-hidden="true">&raquo;</span>
