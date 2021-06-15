@@ -1,9 +1,11 @@
-from wtforms import DateField, FloatField
+from flask import abort, request
+from wtforms import DateField, FloatField, TimeField
 import datetime
 from flask_wtf import FlaskForm
 from wtforms import ValidationError
 from dateutil.relativedelta import relativedelta
 from datetime import date, datetime, timedelta
+import functools
 
 
 class MyForm(FlaskForm):
@@ -46,6 +48,20 @@ class MyDateField(DateField):
         except ValueError:
             self.data = None
             raise ValueError(self.gettext('Введите корректную дату в формате ДД.ММ.ГГГГ.'))
+
+
+class MyTimeField(TimeField):
+
+    def process_formdata(self, valuelist):
+        if not valuelist:
+            return
+
+        time_str = " ".join(valuelist)
+        try:
+            self.data = datetime.strptime(time_str, self.format).time()
+        except ValueError:
+            self.data = None
+            raise ValueError(self.gettext("Введите корректное время в формате ЧЧ:ММ."))
 
 
 class MyFloatField(FloatField):
@@ -91,3 +107,11 @@ def periods_to_navigate():
     return periods
 
 
+def is_fetch(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return func(*args, **kwargs)
+        else:
+            abort(403)
+    return wrapper

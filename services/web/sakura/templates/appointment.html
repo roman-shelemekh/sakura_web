@@ -73,7 +73,7 @@
     <tbody>
         {% for appointment in appointments.items %}
         <tr>
-            <td><a href=""><i class="text-primary far fa-eye"></i></a></td>
+            <td><a href="{{ url_for('appointment_detail', appointment_id=appointment.id) }}"><i class="text-primary far fa-eye"></i></a></td>
             <td>
                 {% if appointment.date %}{{ appointment.date|ru_date }}{% else %} - {% endif %}
             </td>

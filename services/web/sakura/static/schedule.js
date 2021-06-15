@@ -78,7 +78,8 @@ function postShift(salon_id, hairdresser_id, date, url){
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
-            'Content-type': 'application/json; charset=UTF-8'
+            'Content-type': 'application/json; charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest'
         }
     }).then(response => response.json())
 }

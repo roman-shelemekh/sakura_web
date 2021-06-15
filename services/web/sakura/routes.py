@@ -4,9 +4,12 @@ from flask import (
 from sqlalchemy.exc import IntegrityError
 from flask_login import current_user, login_user, logout_user, login_required
 from . import app, db
-from .forms import LoginForm, HairdresserForm, SalonForm, ServiceForm, TypeForm, ClientForm, AppointmentFilterForm
+from .forms import (
+    LoginForm, HairdresserForm, SalonForm, ServiceForm, TypeForm, ClientForm, AppointmentFilterForm,
+    AppointmentForm
+)
 from .models import User, Hairdresser, Salon, Service, Type, Calendar, Shifts, Client, Appointment
-from .utils import months_to_navigate, month_for_heading
+from .utils import months_to_navigate, month_for_heading, is_fetch
 from datetime import datetime
 from transliterate import translit
 
@@ -265,6 +268,7 @@ def schedule(year, month, salon_translit):
 
 
 @app.route('/admin/schedule/add', methods=['POST'])
+@is_fetch
 def add_shift():
     data = request.get_json()
     date = datetime.strptime(data.get('date'), '%d.%m.%Y')
@@ -280,6 +284,7 @@ def add_shift():
 
 
 @app.route('/admin/schedule/delete', methods=['POST'])
+@is_fetch
 def delete_shift():
     data = request.get_json()
     date = datetime.strptime(data.get('date'), '%d.%m.%Y')
@@ -388,3 +393,70 @@ def all_appointments(salon_translit):
     return render_template('appointment.html', title='Посещения', appointments=appointments, form=form,
                            salons=salons, salon_id=salon_id, salon_translit=salon_translit,
                            hairdressers=hairdressers)
+
+
+@app.route('/admin/appointment/<int:appointment_id>', methods=['GET', 'POST'])
+@login_required
+def appointment_detail(appointment_id):
+    appointment = Appointment.query.get_or_404(appointment_id)
+    form = AppointmentForm(edit=True)
+    form.salon.choices = [(str(row.id), row.name) for row in Salon.query.all()]
+    form.client.choices = [(str(row.id), row.phone_number) for row in Client.query.all()]
+    print(form.data)
+    if form.validate_on_submit():
+        appointment.date = form.date.data
+        appointment.time = form.time.data
+        appointment.salon_id = form.salon.data
+        appointment.hairdresser_id = form.hairdresser.data or None
+        client_id = Client.query.filter(Client.phone_number == form.client.data).first().id
+        appointment.client_id = client_id
+        appointment.comment = form.comment.data
+        appointment.accomplished = form.accomplished.data
+        db.session.commit()
+        salon = Salon.query.get_or_404(appointment.salon_id)
+        flash(f'Посещение от {appointment.date.strftime("%d.%m.%Y")} в '
+              f'{appointment.time.strftime("%H:%M")} успешно изменено.')
+        return redirect(url_for('all_appointments', salon_translit=salon.translit))
+    elif request.method == 'GET':
+        form.salon.default = appointment.salon_id
+        form.process()
+        form.date.data = appointment.date
+        form.time.data = appointment.time
+        form.client.data = Client.query.get(appointment.client_id)
+        form.comment.data = appointment.comment
+        form.accomplished.data = appointment.accomplished
+
+    return render_template('appointment_detail.html', title=f'Посещение № {appointment.id}',
+                           appointment=appointment, form=form)
+
+
+@app.route('/admin/get_clients')
+@is_fetch
+def get_clients():
+    return jsonify(clients=[i.phone_number for i in Client.query.all()])
+
+
+@app.route('/admin/get_hairdressers', methods=['POST'])
+@is_fetch
+def get_hairdressers():
+    data = request.get_json()
+    try:
+        default_hairdresser = Appointment.query.get(data.get('appointment_id')).hairdresser_id
+    except:
+        default_hairdresser = None
+    date_id = Calendar.query.filter(Calendar.date == datetime.strptime(data['date'], '%Y-%m-%d').date()).first().id
+    shifts = Shifts.query.filter(Shifts.salon_id == data.get('salon_id'), Shifts.date_id == date_id).all()
+    hairdressers = [{'id':shift.hairdresser_shifts.id, 'name': shift.hairdresser_shifts.name} for shift in shifts]
+    return jsonify(hairdressers=hairdressers, default_hairdresser=default_hairdresser)
+
+
+@app.route('/admin/appointment/<int:appointment_id>/delete')
+@login_required
+def delete_appointment(appointment_id):
+    appointment = Appointment.query.get_or_404(appointment_id)
+    db.session.delete(appointment)
+    db.session.commit()
+    flash(f'Посещение от {appointment.date.strftime("%d.%m.%Y")} в '
+          f'{appointment.time.strftime("%H:%M")} успешно удалено.')
+    salon = Salon.query.get_or_404(appointment.salon_id)
+    return redirect(url_for('all_appointments', salon_translit=salon.translit))

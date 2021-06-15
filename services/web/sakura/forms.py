@@ -5,7 +5,8 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, Length, Optional
 from .models import User, Hairdresser, Salon, Client
-from .utils import Unique, MyForm, MyDateField, MyFloatField
+from .utils import Unique, MyForm, MyDateField, MyFloatField, MyTimeField
+from datetime import time
 
 
 class LoginForm(FlaskForm):
@@ -107,3 +108,33 @@ class AppointmentFilterForm(MyForm):
     status = RadioField('Статус', choices=[
         ('accomplished', 'состоявшиеся'), ('unaccomplished', 'несостоявшиеся'), ('all', 'все'),
     ])
+
+class AppointmentForm(MyForm):
+    date = MyDateField('Дата', validators=[DataRequired('Поле "Дата" является обязательным для заполнения')],
+                       format='%Y-%m-%d')
+    time = MyTimeField('Дата', validators=[Optional()], format='%H:%M')
+    salon = SelectField('Парикмахерская')
+    client = StringField('Клиент')
+    hairdresser = SelectField('Мастер', validate_choice=False)
+    comment = TextAreaField('Комментарий', validators=[Length(
+                                                        min=0, max=500,
+                                                        message='Поле "Комментарий" не должен превышать 500 знаков.')])
+    accomplished = BooleanField('Статус')
+
+    def validate_time(self, field):
+        start, sunday_finish, finish = time(8, 0), time(16, 0), time(20, 0)
+        if not field.data :
+            print('HEllo')
+            return
+        if field.data < start:
+            raise ValidationError('Мы начинаем работать с 8:00.')
+        if field.data > finish:
+            raise ValidationError('С понедельника по субботу мы работаем до 20:00.')
+        if self.date.data and self.date.data.isoweekday() == 7 and field.data > sunday_finish:
+            raise ValidationError(f'Похоже, что {self.date.data.strftime("%d.%m.%Y")} - это воскресенье. '
+                                  f'А по воскресеньям мы работаем до 16:00.')
+
+    def validate_client(self, field):
+        clients = [i.phone_number for i in Client.query.all()]
+        if field.data not in clients:
+            raise ValidationError('Такого клиента пока нет в базе данных.')

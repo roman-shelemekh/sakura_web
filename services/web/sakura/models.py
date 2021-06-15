@@ -35,7 +35,7 @@ class Salon(db.Model):
     phone_number = db.Column(db.String(13))
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
-    translit = db.Column(db.String)
+    translit = db.Column(db.String, unique=True)
     appointments = db.relationship('Appointment', backref='salon_appointment', lazy=True)
     shifts = db.relationship('Shifts', backref='salon_shifts', lazy=True)
     __table_args__ = (db.UniqueConstraint('latitude', 'longitude'),)
@@ -137,4 +137,5 @@ class Shifts(db.Model):
     date_id = db.Column(db.Integer, db.ForeignKey('calendar.id'))
     hairdresser_id = db.Column(db.Integer, db.ForeignKey('hairdresser.id', ondelete='CASCADE'))
     salon_id = db.Column(db.Integer, db.ForeignKey('salon.id', ondelete='CASCADE'))
+    # TODO: ondelete не отображается в миграциях
     __table_args__ = (db.UniqueConstraint('date_id', 'hairdresser_id'),)
