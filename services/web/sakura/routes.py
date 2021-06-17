@@ -402,6 +402,7 @@ def appointment_detail(appointment_id):
     form = AppointmentForm(edit=True)
     form.salon.choices = [(str(row.id), row.name) for row in Salon.query.all()]
     form.client.choices = [(str(row.id), row.phone_number) for row in Client.query.all()]
+    form.services.choices = [(str(row.id), row.name) for row in Service.query.all()]
     print(form.data)
     if form.validate_on_submit():
         appointment.date = form.date.data
@@ -412,6 +413,9 @@ def appointment_detail(appointment_id):
         appointment.client_id = client_id
         appointment.comment = form.comment.data
         appointment.accomplished = form.accomplished.data
+
+        appointment.service_to_appointment = [Service.query.get(service_id) for service_id in form.services.data]
+
         db.session.commit()
         salon = Salon.query.get_or_404(appointment.salon_id)
         flash(f'Посещение от {appointment.date.strftime("%d.%m.%Y")} в '
@@ -430,26 +434,6 @@ def appointment_detail(appointment_id):
                            appointment=appointment, form=form)
 
 
-@app.route('/admin/get_clients')
-@is_fetch
-def get_clients():
-    return jsonify(clients=[i.phone_number for i in Client.query.all()])
-
-
-@app.route('/admin/get_hairdressers', methods=['POST'])
-@is_fetch
-def get_hairdressers():
-    data = request.get_json()
-    try:
-        default_hairdresser = Appointment.query.get(data.get('appointment_id')).hairdresser_id
-    except:
-        default_hairdresser = None
-    date_id = Calendar.query.filter(Calendar.date == datetime.strptime(data['date'], '%Y-%m-%d').date()).first().id
-    shifts = Shifts.query.filter(Shifts.salon_id == data.get('salon_id'), Shifts.date_id == date_id).all()
-    hairdressers = [{'id':shift.hairdresser_shifts.id, 'name': shift.hairdresser_shifts.name} for shift in shifts]
-    return jsonify(hairdressers=hairdressers, default_hairdresser=default_hairdresser)
-
-
 @app.route('/admin/appointment/<int:appointment_id>/delete')
 @login_required
 def delete_appointment(appointment_id):
@@ -460,3 +444,26 @@ def delete_appointment(appointment_id):
           f'{appointment.time.strftime("%H:%M")} успешно удалено.')
     salon = Salon.query.get_or_404(appointment.salon_id)
     return redirect(url_for('all_appointments', salon_translit=salon.translit))
+
+
+@app.route('/admin/appointment/get_data/<int:appointment_id>', methods=['POST'])
+@is_fetch
+def get_data(appointment_id):
+    data = request.get_json()
+    date_id = Calendar.query.filter(Calendar.date == datetime.strptime(data['date'], '%Y-%m-%d').date()).first().id
+    shifts = Shifts.query.filter(Shifts.salon_id == data.get('salon_id'), Shifts.date_id == date_id).all()
+    hairdressers = [{'id':shift.hairdresser_shifts.id, 'name': shift.hairdresser_shifts.name} for shift in shifts]
+    default_hairdresser = Appointment.query.get(appointment_id).hairdresser_id
+    default_services = None
+    if data.get('initial') and default_hairdresser:
+        services = [{'id': service.id, 'name': service.name} for service
+                    in Hairdresser.query.get(default_hairdresser).specialization]
+        default_services = [service.id for service in Appointment.query.get(appointment_id).service_to_appointment]
+    elif data.get('hairdresser_id'):
+        services = [{'id': service.id, 'name': service.name} for service
+                    in Hairdresser.query.get(data.get('hairdresser_id')).specialization]
+        default_hairdresser = int(data.get('hairdresser_id'))
+    else:
+        services = [{'id': service.id, 'name': service.name} for service in Service.query.all()]
+    return jsonify(clients=[i.phone_number for i in Client.query.all()], hairdressers=hairdressers,
+                   default_hairdresser=default_hairdresser, services=services, default_services=default_services)

@@ -120,11 +120,11 @@ class AppointmentForm(MyForm):
                                                         min=0, max=500,
                                                         message='Поле "Комментарий" не должен превышать 500 знаков.')])
     accomplished = BooleanField('Статус')
+    services = SelectMultipleField("Услуги", validate_choice=False)
 
     def validate_time(self, field):
         start, sunday_finish, finish = time(8, 0), time(16, 0), time(20, 0)
-        if not field.data :
-            print('HEllo')
+        if not field.data:
             return
         if field.data < start:
             raise ValidationError('Мы начинаем работать с 8:00.')
