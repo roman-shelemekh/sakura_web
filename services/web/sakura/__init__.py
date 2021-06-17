@@ -14,5 +14,5 @@ login.login_view = 'login'
 
 
 from . import routes, models
-from .template_filters import format_date
+from .template_filters import *
 from .context_processors import inject_date

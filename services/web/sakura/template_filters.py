@@ -14,8 +14,14 @@ def format_time(value):
     return value
 
 @app.template_filter('ru_weekday')
-def format_date(value):
+def format_weekday(value):
     weekdays = ['понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресенье']
     if isinstance(value, datetime.date):
         weekday = weekdays[value.isoweekday()-1]
     return weekday
+
+@app.template_filter('float_round')
+def round_float(value):
+    if isinstance(value, float):
+        value = '{:0.2f}'.format(value)
+    return value

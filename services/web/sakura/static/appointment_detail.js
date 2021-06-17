@@ -58,12 +58,12 @@ function fetch_data(initial=false) {
         services_select.innerHTML = ''
         for (const service of json.services){
             if (initial && json.default_services && json.default_services.includes(service.id)){
-                services_select.innerHTML += '<option selected="selected" value="' + service.id + '">' + service.name + '</option>'
+                services_select.innerHTML += '<option selected="selected" value="' + service.id + '">' + service.name +
+                                             '</option>'
             } else {
                 services_select.innerHTML += '<option value="' + service.id + '">' + service.name + '</option>'
             }
         }
-
     })
 }
 

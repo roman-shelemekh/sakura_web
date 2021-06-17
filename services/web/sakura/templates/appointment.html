@@ -102,7 +102,7 @@
                     {% for service in appointment.service_to_appointment  %}
                     {% set priceTotal.sum = priceTotal.sum + service.price|float %}
                     {% endfor %}
-                {{ priceTotal.sum }}
+                {{ priceTotal.sum|float_round }}
                 {% else %} -
                 {% endif %}
             </td>

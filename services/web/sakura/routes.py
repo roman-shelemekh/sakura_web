@@ -351,6 +351,15 @@ def delete_client(client_id):
     return redirect(url_for('client'))
 
 
+@app.route('/admin/client/<int:client_id>/history')
+@login_required
+def client_history(client_id):
+    client = Client.query.get_or_404(client_id)
+    appointments = Appointment.query.filter(Appointment.client_id == client.id).order_by(Appointment.date.desc())
+    return render_template('client_history.html', title='История посещений', client=client,
+                           appointments=appointments)
+
+
 @app.route('/admin/appointment/<salon_translit>')
 @login_required
 def all_appointments(salon_translit):
