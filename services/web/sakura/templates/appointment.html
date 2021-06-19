@@ -73,42 +73,36 @@
     <tbody>
         {% for appointment in appointments.items %}
         <tr>
-            <td><a href="{{ url_for('appointment_detail', appointment_id=appointment.id) }}"><i class="text-primary far fa-eye"></i></a></td>
+            <td><a href="{{ url_for('appointment_detail', appointment_id=appointment[0].id) }}"><i class="text-primary far fa-eye"></i></a></td>
             <td>
-                {% if appointment.date %}{{ appointment.date|ru_date }}{% else %} - {% endif %}
+                {% if appointment[0].date %}{{ appointment[0].date|ru_date }}{% else %} - {% endif %}
             </td>
             <td>
-                {% if appointment.time %}{{ appointment.time|ru_time }}{% else %} - {% endif %}
+                {% if appointment[0].time %}{{ appointment[0].time|ru_time }}{% else %} - {% endif %}
             </td>
             <td>
-                {% if appointment.hairdresser_appointment %}{{ appointment.hairdresser_appointment }}{% else %} - {% endif %}
+                {% if appointment[0].hairdresser_appointment %}{{ appointment[0].hairdresser_appointment }}{% else %} - {% endif %}
             </td>
             <td>
-                {% if appointment.client_appointment %}{{ appointment.client_appointment }}{% else %} - {% endif %}
+                {% if appointment[0].client_appointment %}{{ appointment[0].client_appointment }}{% else %} - {% endif %}
             </td>
             <td>
-                {% if appointment.service_to_appointment %}
+                {% if appointment[0].services %}
                 <ul class="list-unstyled">
-                {% for service in appointment.service_to_appointment  %}
+                {% for service in appointment[0].services  %}
                 <li>{{ service }}</li>
                 {% endfor %}
                 </ul>
                 {% else %} -
                 {% endif %}
+
             </td>
             <td>
-                {% set priceTotal = namespace(sum=0.0) %}
-                {% if appointment.service_to_appointment %}
-                    {% for service in appointment.service_to_appointment  %}
-                    {% set priceTotal.sum = priceTotal.sum + service.price|float %}
-                    {% endfor %}
-                {{ priceTotal.sum|float_round }}
-                {% else %} -
-                {% endif %}
+                {% if appointment[1] %} {{ appointment[1] }} {% else %} - {% endif %}
             </td>
-            <td>{% if appointment.accomplished %} <i class="text-success far fa-check-circle"></i> {% else %} <i class="far fa-question-circle text-warning"></i> {% endif %}</i></td>
+            <td>{% if appointment[0].accomplished %} <i class="text-success far fa-check-circle"></i> {% else %} <i class="far fa-question-circle text-warning"></i> {% endif %}</td>
             <td>
-                {% if appointment.comment %}<a tabindex="0" class="" role="button" {% if appointment.comment %} data-bs-toggle="popover" data-bs-trigger="focus" title="Комментарий" data-bs-content="{{ appointment.comment }}"{% endif %}><i class="far fa-comment-alt"></i></a>{% endif %}
+                {% if appointment[0].comment %}<a tabindex="0" class="" role="button" {% if appointment[0].comment %} data-bs-toggle="popover" data-bs-trigger="focus" title="Комментарий" data-bs-content="{{ appointment[0].comment }}"{% endif %}><i class="far fa-comment-alt"></i></a>{% endif %}
             </td>
         </tr>
     {% endfor %}

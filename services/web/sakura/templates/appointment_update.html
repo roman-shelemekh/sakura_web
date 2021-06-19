@@ -1,0 +1,93 @@
+{% extends "admin.html" %}
+
+{% block link %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.1.1/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet"/>
+{% endblock %}
+
+{% block right_column %}
+<h3 class="mb-3">Посещение от {{ appointment.date.strftime("%d.%m.%Y") }} в {{ appointment.time.strftime("%H:%M") }}</h3>
+<form action="" method="post" class="needs-validation" novalidate>
+    <div>{{ form.hidden_tag() }}</div>
+    <div class="form-floating mb-3" data-url="{{ url_for('get_data', appointment_id=appointment.id) }}">
+        {{ form.date(class='form-control' + (" is-invalid" if form.date.errors else ""), placeholder='Дата', id='id_date', type='date') }}
+        <label for="id_date">Дата</label>
+        {% if form.date.errors %}
+        <div id="id_date" class="invalid-feedback">
+            {% for error in form.date.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+        <div class="form-floating mb-3">
+        {{ form.time(class='form-control' + (" is-invalid" if form.time.errors else ""), placeholder='Время', id='id_time', type='time', step='600') }}
+        <label for="id_time">Время</label>
+        {% if form.time.errors %}
+        <div id="id_time" class="invalid-feedback">
+            {% for error in form.time.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-floating mb-3">
+        {{ form.salon(class="form-select", placeholder='Парикмахерская', id='id_salon') }}
+        <label for="id_salon">Парикмахерская</label>
+    </div>
+    <div class="form-floating mb-3">
+        {{ form.client(class='form-control' + (" is-invalid" if form.client.errors else ""), placeholder='Клиент', id='id_client', list='clients_list') }}
+        <label for="id_client">Клиент</label>
+        <datalist id="clients_list"></datalist>
+        {% if form.client.errors %}
+        <div id="id_client" class="invalid-feedback">
+            {% for error in form.client.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-floating mb-3">
+        {{ form.hairdresser(class="form-select", placeholder='Мастер', id='id_hairdresser') }}
+        <label for="id_hairdresser">Мастер</label>
+    </div>
+    <div class="mb-3">
+<!--        <label for="services">Перечень услуг</label>-->
+        {{ form.services(class="form-control", multiple="multiple") }}
+    </div>
+    <div class="form-floating mb-3">
+        {{ form.comment(class='form-control' + (" is-invalid" if form.comment.errors else ""), placeholder='Комментарий', style='height: 100px;', id='id_comment') }}
+        <label for="id_comment">Комментарий</label>
+        {% if form.comment.errors %}
+        <div id="id_comment" class="invalid-feedback">
+            {% for error in form.comment.errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="form-check form-switch mb-3">
+        {{ form.accomplished(class="form-check-input", type="checkbox", id="id_accomplished") }}
+        <label class="form-check-label" for="id_accomplished">Посещение состоялось</label>
+    </div>
+
+
+    <div class="d-grid gap-2 mb-3">
+        <button class="btn btn-lg btn-primary" type="submit">Внести изменения</button>
+    </div>
+</form>
+<div class="d-grid gap-2 mb-3">
+    <a href="{{ url_for('delete_appointment', appointment_id=appointment.id) }}" class="btn btn-lg btn-danger" onclick="return confirm('Вы уверены?');">Удалить запись</a>
+</div>
+
+{% endblock %}
+
+{% block script %}
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script type="text/javascript" src="{{ url_for('staticfiles', filename='myselect.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('staticfiles', filename='appointment_detail.js') }}"></script>
+
+{% endblock %}

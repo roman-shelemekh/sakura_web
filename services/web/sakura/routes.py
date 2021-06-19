@@ -8,10 +8,13 @@ from .forms import (
     LoginForm, HairdresserForm, SalonForm, ServiceForm, TypeForm, ClientForm, AppointmentFilterForm,
     AppointmentForm
 )
-from .models import User, Hairdresser, Salon, Service, Type, Calendar, Shifts, Client, Appointment
+from .models import (
+    User, Hairdresser, Salon, Service, Type, Calendar, Shifts, Client, Appointment, ServiceToAppointment
+)
 from .utils import months_to_navigate, month_for_heading, is_fetch
 from datetime import datetime
 from transliterate import translit
+from sqlalchemy import func
 
 
 @app.route("/")
@@ -321,9 +324,9 @@ def add_client():
     return render_template('client_add.html', title='Новый клиент', form=form)
 
 
-@app.route('/admin/client/<int:client_id>', methods=['GET', 'POST'])
+@app.route('/admin/client/<int:client_id>/update', methods=['GET', 'POST'])
 @login_required
-def client_detail(client_id):
+def client_update(client_id):
     client = Client.query.get_or_404(client_id)
     form = ClientForm(edit=True)
     if form.validate_on_submit():
@@ -332,12 +335,12 @@ def client_detail(client_id):
         client.discount = form.discount.data
         db.session.commit()
         flash(f'Данные о клиенте "{client.name}" успешно изменены.')
-        return redirect(url_for('client'))
+        return redirect(url_for('client_detail', client_id=client_id))
     elif request.method == 'GET':
         form.name.data = client.name
         form.phone_number.data = client.phone_number
         form.discount.data = client.discount
-    return render_template('client_detail.html', title=f'Клиент {client.name}',
+    return render_template('client_update.html', title=f'Клиент {client.name}',
                            client=client, form=form)
 
 
@@ -351,13 +354,21 @@ def delete_client(client_id):
     return redirect(url_for('client'))
 
 
-@app.route('/admin/client/<int:client_id>/history')
+@app.route('/admin/client/<int:client_id>/')
 @login_required
-def client_history(client_id):
+def client_detail(client_id):
     client = Client.query.get_or_404(client_id)
     appointments = Appointment.query.filter(Appointment.client_id == client.id).order_by(Appointment.date.desc())
-    return render_template('client_history.html', title='История посещений', client=client,
-                           appointments=appointments)
+    appointments_count = Appointment.query.filter(Appointment.client_id == client.id,
+                                                  Appointment.accomplished == True).count()
+    try:
+        revenue = db.session.query(func.sum(ServiceToAppointment.price)).join(Appointment)\
+            .group_by(Appointment.client_id)\
+            .filter(Appointment.client_id == client_id).filter(Appointment.accomplished == True).first()[0]
+    except TypeError:
+        revenue = 0
+    return render_template('client_detail.html', title='История посещений', client=client,
+                           appointments=appointments, revenue=revenue, appointments_count=appointments_count)
 
 
 @app.route('/admin/appointment/<salon_translit>')
@@ -365,8 +376,11 @@ def client_history(client_id):
 def all_appointments(salon_translit):
     salons = Salon.query.all()
     salon_id = Salon.query.filter(Salon.translit == salon_translit).first_or_404().id
-    appointments = Appointment.query.filter(Appointment.salon_id == salon_id).order_by(Appointment.date.desc())\
-        .order_by(Appointment.time.desc())
+
+    appointments = Appointment.query.with_entities(Appointment, func.sum(ServiceToAppointment.price).label('total_price'))\
+        .outerjoin(ServiceToAppointment).group_by(Appointment.id).filter(Appointment.salon_id == salon_id)\
+        .order_by(Appointment.date.desc()).order_by(Appointment.time.desc())
+
     hairdressers = Hairdresser.query.all()
     form = AppointmentFilterForm(request.args)
     form.hairdresser.choices = [('', '--выбрать--')] + [(i.id, i.name) for i in Hairdresser.query.all()]
@@ -396,17 +410,24 @@ def all_appointments(salon_translit):
         appointments = appointments.filter(Appointment.accomplished)
     elif status == 'unaccomplished':
         appointments = appointments.filter(Appointment.accomplished.is_(False))
-
     page = request.args.get('page', 1, type=int)
     appointments = appointments.paginate(page, 30, False)
     return render_template('appointment.html', title='Посещения', appointments=appointments, form=form,
                            salons=salons, salon_id=salon_id, salon_translit=salon_translit,
                            hairdressers=hairdressers)
 
-
-@app.route('/admin/appointment/<int:appointment_id>', methods=['GET', 'POST'])
+@app.route('/admin/appointment/<int:appointment_id>/')
 @login_required
 def appointment_detail(appointment_id):
+    appointment = Appointment.query.get_or_404(appointment_id)
+    total = sum([service.price for service in appointment.services])
+    return render_template('appointment_detail.html', title=f'Посещение № {appointment.id}', appointment=appointment,
+                           total=total)
+
+
+@app.route('/admin/appointment/<int:appointment_id>/update', methods=['GET', 'POST'])
+@login_required
+def appointment_update(appointment_id):
     appointment = Appointment.query.get_or_404(appointment_id)
     form = AppointmentForm(edit=True)
     form.salon.choices = [(str(row.id), row.name) for row in Salon.query.all()]
@@ -418,18 +439,21 @@ def appointment_detail(appointment_id):
         appointment.time = form.time.data
         appointment.salon_id = form.salon.data
         appointment.hairdresser_id = form.hairdresser.data or None
-        client_id = Client.query.filter(Client.phone_number == form.client.data).first().id
-        appointment.client_id = client_id
+        client = Client.query.filter(Client.phone_number == form.client.data).first()
+        appointment.client_id = client.id
         appointment.comment = form.comment.data
         appointment.accomplished = form.accomplished.data
-
-        appointment.service_to_appointment = [Service.query.get(service_id) for service_id in form.services.data]
-
+        for service in appointment.services:
+            db.session.delete(service)
+        for service_id in form.services.data:
+            service = ServiceToAppointment(service_id=service_id, appointment_id=appointment.id)
+            service.set_price()
+            db.session.add(service)
         db.session.commit()
         salon = Salon.query.get_or_404(appointment.salon_id)
         flash(f'Посещение от {appointment.date.strftime("%d.%m.%Y")} в '
               f'{appointment.time.strftime("%H:%M")} успешно изменено.')
-        return redirect(url_for('all_appointments', salon_translit=salon.translit))
+        return redirect(url_for('appointment_detail', appointment_id=appointment.id))
     elif request.method == 'GET':
         form.salon.default = appointment.salon_id
         form.process()
@@ -438,8 +462,7 @@ def appointment_detail(appointment_id):
         form.client.data = Client.query.get(appointment.client_id)
         form.comment.data = appointment.comment
         form.accomplished.data = appointment.accomplished
-
-    return render_template('appointment_detail.html', title=f'Посещение № {appointment.id}',
+    return render_template('appointment_update.html', title=f'Посещение № {appointment.id}',
                            appointment=appointment, form=form)
 
 
@@ -467,7 +490,7 @@ def get_data(appointment_id):
     if data.get('initial') and default_hairdresser:
         services = [{'id': service.id, 'name': service.name} for service
                     in Hairdresser.query.get(default_hairdresser).specialization]
-        default_services = [service.id for service in Appointment.query.get(appointment_id).service_to_appointment]
+        default_services = [service.service_id for service in Appointment.query.get(appointment_id).services]
     elif data.get('hairdresser_id'):
         services = [{'id': service.id, 'name': service.name} for service
                     in Hairdresser.query.get(data.get('hairdresser_id')).specialization]

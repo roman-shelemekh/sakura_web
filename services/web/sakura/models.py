@@ -97,10 +97,26 @@ class Client(db.Model):
         return self.phone_number
 
 
-service_to_appointment = db.Table('service_to_appointment',
-    db.Column('appointment_id', db.Integer, db.ForeignKey('appointment.id', ondelete='CASCADE'), primary_key=True),
-    db.Column('service_id', db.Integer, db.ForeignKey('service.id', ondelete='CASCADE'), primary_key=True)
-)
+# service_to_appointment = db.Table('service_to_appointment',
+#     db.Column('appointment_id', db.Integer, db.ForeignKey('appointment.id', ondelete='CASCADE'), primary_key=True),
+#     db.Column('service_id', db.Integer, db.ForeignKey('service.id', ondelete='CASCADE'), primary_key=True)
+# )
+
+class ServiceToAppointment(db.Model):
+    __tablename__ = 'service_to_appointment'
+    appointment_id = db.Column(db.Integer, db.ForeignKey('appointment.id', ondelete='CASCADE'), primary_key=True)
+    service_id = db.Column(db.Integer, db.ForeignKey('service.id', ondelete='CASCADE'), primary_key=True)
+    price = db.Column(db.Float)
+    service = db.relationship("Service")
+
+    def __repr__(self):
+        return self.service.name
+
+    def set_price(self):
+        price = Service.query.get(self.service_id).price
+        discount = Appointment.query.get(self.appointment_id).client_appointment.discount or 0
+        final_price = round(price * (100 - discount) / 100, 2)
+        self.price = final_price
 
 
 class Appointment(db.Model):
@@ -112,8 +128,9 @@ class Appointment(db.Model):
     hairdresser_id = db.Column(db.Integer, db.ForeignKey('hairdresser.id', ondelete='SET NULL'))
     comment = db.Column(db.String(500))
     accomplished = db.Column(db.Boolean(), default=True)
-    service_to_appointment = db.relationship('Service', secondary=service_to_appointment, lazy='subquery',
-                                             backref=db.backref('service_appointment', lazy=True))
+    # service_to_appointment = db.relationship('Service', secondary=service_to_appointment, lazy='subquery',
+    #                                          backref=db.backref('service_appointment', lazy=True))
+    services = db.relationship('ServiceToAppointment', backref='appointment_services')
 
 
 class Calendar(db.Model):

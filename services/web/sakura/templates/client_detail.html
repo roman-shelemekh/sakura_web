@@ -1,47 +1,93 @@
 {% extends "admin.html" %}
 
 {% block right_column %}
-<h3 class="mb-3">Клиент {{ client.name }}</h3>
-<form action="" method="post" class="needs-validation" novalidate>
-    <div>{{ form.hidden_tag() }}</div>
-    <div class="form-floating mb-3">
-        {{ form.name(class='form-control' + (" is-invalid" if form.name.errors else ""), placeholder='Имя', id='id_name') }}
-        <label for="id_name">Имя</label>
-        {% if form.name.errors %}
-        <div id="id_name" class="invalid-feedback">
-            {% for error in form.name.errors %}
-            {{ error }}
-            {% endfor %}
-        </div>
-        {% endif %}
-    </div>
-    <div class="form-floating mb-3">
-        {{ form.phone_number(class='form-control' + (" is-invalid" if form.phone_number.errors else ""), placeholder='Номер телефона', id='id_phone_number') }}
-        <label for="id_phone_number">Номер телефона</label>
-        {% if form.phone_number.errors %}
-        <div id="id_phone_number" class="invalid-feedback">
-            {% for error in form.phone_number.errors %}
-            {{ error }}
-            {% endfor %}
-        </div>
-        {% endif %}
-    </div>
-    <div class="form-floating mb-3">
-        {{ form.discount(class='form-control' + (" is-invalid" if form.discount.errors else ""), placeholder='Скидка', id='id_discount') }}
-        <label for="id_discount">Скидка</label>
-        {% if form.discount.errors %}
-        <div id="id_discount" class="invalid-feedback">
-            {% for error in form.discount.errors %}
-            {{ error }}
-            {% endfor %}
-        </div>
-        {% endif %}
-    </div>
-    <div class="d-grid gap-2 mb-3">
-        <button class="btn btn-lg btn-primary" type="submit">Внести изменения</button>
-    </div>
-</form>
-<div class="d-grid gap-2 mb-3">
-    <a href="{{ url_for('delete_client', client_id=client.id) }}" class="btn btn-lg btn-danger" onclick="return confirm('Вы уверены?');">Удалить запись</a>
+<div>
+    <a href="{{ url_for('client_update', client_id=client.id) }}" class="btn btn-outline-primary btn-sm float-end"><i class="fas fa-edit pe-2"></i>Изменить</a>
+    <h3 class="mb-3">История посещений клиента {{ client.name }}</h3>
 </div>
+<div class="p-3 bg-light">
+    <table class="table table-sm table-light table-borderless ">
+        <tbody class="small">
+            <tr>
+                <td><b>Имя:</b></td>
+                <td>{{ client.name }}</td>
+            </tr>
+            <tr>
+                <td><b>Номер телефона:</b></td>
+                <td>{{ client.phone_number }}</td>
+            </tr>
+            <tr>
+                <td><b>Размер скидки:</b></td>
+                <td>{% if client.discount %}{{ client.discount }}%{% else %} - {% endif %}</td>
+            </tr>
+            <tr>
+                <td><b>Количество состоявшихся посещений:</b></td>
+                <td>{{ appointments_count }}</td>
+            </tr>
+            <tr>
+                <td><b>Общая выручка:</b></td>
+                <td>{{ revenue }} рублей</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col"></th>
+            <th scope="col">Дата</th>
+            <th scope="col">Время</th>
+            <th scope="col">Парикмахерская</th>
+            <th scope="col">Мастер</th>
+            <th scope="col">Услуги</th>
+            <th scope="col">Сумма</th>
+            <th scope="col"></th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for appointment in appointments %}
+        <tr>
+            <td><a href="{{ url_for('appointment_detail', appointment_id=appointment.id) }}"><i class="text-primary far fa-eye"></i></a></td>
+            <td>
+                {% if appointment.date %}{{ appointment.date|ru_date }}{% else %} - {% endif %}
+            </td>
+            <td>
+                {% if appointment.time %}{{ appointment.time|ru_time }}{% else %} - {% endif %}
+            </td>
+            <td>
+                {{ appointment.salon_appointment.name }}
+            </td>
+            <td>
+                {% if appointment.hairdresser_appointment %}{{ appointment.hairdresser_appointment.name }}{% else %} - {% endif %}
+            </td>
+            <td>
+                {% if appointment.services %}
+                <ul class="list-unstyled">
+                {% for service in appointment.services  %}
+                <li>{{ service }}</li>
+                {% endfor %}
+                </ul>
+                {% else %} -
+                {% endif %}
+            </td>
+            <td>
+                {% set priceTotal = namespace(sum=0.0) %}
+                {% if appointment.services %}
+                    {% for service in appointment.services  %}
+                    {% set priceTotal.sum = priceTotal.sum + service.price|float %}
+                    {% endfor %}
+                {{ priceTotal.sum|float_round }}
+                {% else %} -
+                {% endif %}
+            </td>
+            <td>{% if appointment.accomplished %} <i class="text-success far fa-check-circle"></i> {% else %} <i class="far fa-question-circle text-warning"></i> {% endif %}</i></td>
+            <td>
+                {% if appointment.comment %}<a tabindex="0" class="" role="button" {% if appointment.comment %} data-bs-toggle="popover" data-bs-trigger="focus" title="Комментарий" data-bs-content="{{ appointment.comment }}"{% endif %}><i class="far fa-comment-alt"></i></a>{% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

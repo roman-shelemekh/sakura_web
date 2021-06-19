@@ -23,7 +23,7 @@
             <td>{{ client.phone_number }}</td>
 
             <td>{% if client.discount %}{{ client.discount }}{% else %} - {% endif %}</td>
-            <td><a href="{{ url_for('client_history', client_id=client.id) }}"><i class="fas fa-history"></i></a></td>
+            <td><a href="{{ url_for('client_update', client_id=client.id) }}"><i class="far fa-edit"></i></i></a></td>
         </tr>
     {% endfor %}
     </tbody>
