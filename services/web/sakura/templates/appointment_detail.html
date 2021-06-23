@@ -3,12 +3,16 @@
 {% block right_column %}
 <div>
     <a href="{{ url_for('appointment_update', appointment_id=appointment.id) }}" class="btn btn-outline-primary btn-sm float-end"><i class="fas fa-edit pe-2"></i>Изменить</a>
-    <h3 class="mb-3">Посещение от {{ appointment.date.strftime("%d.%m.%Y") }} в {{ appointment.time.strftime("%H:%M") }} {% if appointment.accomplished %} <i class="text-success far fa-check-circle"></i> {% else %} <i class="far fa-question-circle text-warning"></i> {% endif %}</i></h3>
+    <h3 class="mb-3">Посещение от <a class="link-secondary" href="{{ url_for('day_record', year=appointment.date.year, month=appointment.date.month, day=appointment.date.day, salon_translit=appointment.salon_appointment.translit) }}">{{ appointment.date.strftime("%d.%m.%Y") }}</a> {% if appointment.time %} в {{ appointment.time.strftime("%H:%M") }} {% endif %} {% if appointment.accomplished %} <i class="text-success far fa-check-circle"></i> {% else %} <i class="far fa-question-circle text-warning"></i> {% endif %}</i></h3>
 </div>
 
 <div class="p-3 bg-light">
     <table class="table table-sm table-light table-borderless ">
         <tbody class="small">
+            <tr>
+                <td><b>Парикмахерская:</b></td>
+                <td>{{ appointment.salon_appointment }}</td>
+            </tr>
             <tr>
                 <td><b>Мастер:</b></td>
                 <td>{% if appointment.hairdresser_appointment %}<a class="link-secondary" href="{{ url_for('hairdresser_detail', hairdresser_id=appointment.hairdresser_appointment.id) }}">{{ appointment.hairdresser_appointment }}</a>{% else %} - {% endif %}</td>
@@ -35,6 +39,7 @@
             <th scope="col">Название услуги</th>
             <th scope="col">Тип услуги</th>
             <th scope="col">Полная стоимость</th>
+            <th scope="col">Скидка</th>
             <th scope="col">Стоимость со скидкой</th>
         </tr>
     </thead>
@@ -43,14 +48,16 @@
         <tr>
             <td>{{ service.service.name }}</td>
             <td>{{ service.service.service_type }}</td>
-            <td>{{ service.service.price }}</td>
             <td>{{ service.price }}</td>
+            <td>{{ service.discount }}%</td>
+            <td>{{ service.final_price }}</td>
         </tr>
     {% endfor %}
     </tbody>
     <tfoot>
         <tr>
             <td><b>Итого:</b></td>
+            <td></td>
             <td></td>
             <td></td>
             <td><b>{{ total }}</b></td>

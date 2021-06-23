@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory, render_template
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -13,6 +13,4 @@ login = LoginManager(app)
 login.login_view = 'login'
 
 
-from . import routes, models
-from .template_filters import *
-from .context_processors import inject_date
+from . import routes, models, template_filters, context_processors

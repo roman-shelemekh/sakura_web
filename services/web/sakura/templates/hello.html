@@ -1,0 +1,21 @@
+{% extends "admin.html" %}
+
+{% block right_column %}
+<!--<div>-->
+<!--    <h3 class="mb-3">Главная</h3>-->
+<!--</div>-->
+<div class="pb-5">
+    <h4 class="text-center">Вас приветствует система управления бизнес-процессами сети парикмахерских "Сакура"</h4>
+</div>
+
+<form method="POST" class="mb-3 needs-validation" novalidate>
+    <div class="row align-items-center">
+        <div class="col-auto">Перейти к журналу за рабочий день на дату</div>
+        <div class="col-3">
+            <input class="form-control" name="date" required type="date">
+        </div>
+        <div class="col-3"><button type="submit" class="btn btn-primary">Перейти</button></div>
+    </div>
+</form>
+
+{% endblock %}

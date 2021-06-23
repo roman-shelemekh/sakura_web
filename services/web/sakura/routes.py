@@ -1,5 +1,5 @@
 from flask import (
-    render_template, send_from_directory, flash, redirect, url_for, request, jsonify
+    render_template, send_from_directory, flash, redirect, url_for, request, jsonify, abort
 )
 from sqlalchemy.exc import IntegrityError
 from flask_login import current_user, login_user, logout_user, login_required
@@ -20,7 +20,7 @@ from sqlalchemy import func
 @app.route("/")
 def index():
     users = User.query.all()
-    return render_template('index.html', users=users)
+    return redirect('login')
 
 
 @app.route("/static/<path:filename>")
@@ -31,7 +31,7 @@ def staticfiles(filename):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('admin'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
@@ -46,11 +46,15 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/admin')
+@app.route('/admin', methods=['GET', 'POST'])
 @login_required
 def admin():
-    hairdresser_form = HairdresserForm()
-    return render_template('admin.html', title='Админ', hairdresser_form=hairdresser_form)
+    if request.method == 'POST' and request.form.get('date'):
+        date = datetime.strptime(request.form.get('date'), '%Y-%m-%d')
+        salon_translit = Salon.query.order_by(Salon.id).first().translit
+        return redirect(url_for('day_record', salon_translit=salon_translit, year=date.year, month=date.month,
+                                day=date.day))
+    return render_template('hello.html', title='Главная')
 
 
 @app.route('/admin/hairdresser')
@@ -65,7 +69,6 @@ def hairdresser():
 def hairdresser_detail(hairdresser_id):
     hairdresser = Hairdresser.query.get_or_404(hairdresser_id)
     form = HairdresserForm(edit=True)
-
     form.specialization.choices = [(str(row.id), row.name + ' (' + row.service_type.name + ')') for row in
                                    Service.query.order_by(Service.type_id).all()]
     if form.validate_on_submit():
@@ -315,6 +318,8 @@ def client():
 @login_required
 def add_client():
     form = ClientForm()
+    if request.args.get('phone_number'):
+        form.phone_number.data = '+' + request.args.get('phone_number').strip()
     if form.validate_on_submit():
         client = Client(name=form.name.data, phone_number=form.phone_number.data, discount=form.discount.data)
         db.session.add(client)
@@ -362,7 +367,7 @@ def client_detail(client_id):
     appointments_count = Appointment.query.filter(Appointment.client_id == client.id,
                                                   Appointment.accomplished == True).count()
     try:
-        revenue = db.session.query(func.sum(ServiceToAppointment.price)).join(Appointment)\
+        revenue = db.session.query(func.sum(ServiceToAppointment.final_price)).join(Appointment)\
             .group_by(Appointment.client_id)\
             .filter(Appointment.client_id == client_id).filter(Appointment.accomplished == True).first()[0]
     except TypeError:
@@ -420,7 +425,7 @@ def all_appointments(salon_translit):
 @login_required
 def appointment_detail(appointment_id):
     appointment = Appointment.query.get_or_404(appointment_id)
-    total = sum([service.price for service in appointment.services])
+    total = sum([service.final_price for service in appointment.services])
     return render_template('appointment_detail.html', title=f'Посещение № {appointment.id}', appointment=appointment,
                            total=total)
 
@@ -450,9 +455,7 @@ def appointment_update(appointment_id):
             service.set_price()
             db.session.add(service)
         db.session.commit()
-        salon = Salon.query.get_or_404(appointment.salon_id)
-        flash(f'Посещение от {appointment.date.strftime("%d.%m.%Y")} в '
-              f'{appointment.time.strftime("%H:%M")} успешно изменено.')
+        flash(f'Посещение № {appointment.id} от {appointment.date.strftime("%d.%m.%Y")} успешно изменено.')
         return redirect(url_for('appointment_detail', appointment_id=appointment.id))
     elif request.method == 'GET':
         form.salon.default = appointment.salon_id
@@ -486,11 +489,10 @@ def get_data(appointment_id):
     shifts = Shifts.query.filter(Shifts.salon_id == data.get('salon_id'), Shifts.date_id == date_id).all()
     hairdressers = [{'id':shift.hairdresser_shifts.id, 'name': shift.hairdresser_shifts.name} for shift in shifts]
     default_hairdresser = Appointment.query.get(appointment_id).hairdresser_id
-    default_services = None
+    default_services = [service.service_id for service in Appointment.query.get(appointment_id).services]
     if data.get('initial') and default_hairdresser:
         services = [{'id': service.id, 'name': service.name} for service
                     in Hairdresser.query.get(default_hairdresser).specialization]
-        default_services = [service.service_id for service in Appointment.query.get(appointment_id).services]
     elif data.get('hairdresser_id'):
         services = [{'id': service.id, 'name': service.name} for service
                     in Hairdresser.query.get(data.get('hairdresser_id')).specialization]
@@ -499,3 +501,106 @@ def get_data(appointment_id):
         services = [{'id': service.id, 'name': service.name} for service in Service.query.all()]
     return jsonify(clients=[i.phone_number for i in Client.query.all()], hairdressers=hairdressers,
                    default_hairdresser=default_hairdresser, services=services, default_services=default_services)
+
+
+@app.route('/admin/schedule/<salon_translit>/<int:year>/<int:month>/<int:day>')
+@login_required
+def day_record(year, month, day, salon_translit):
+    salon = Salon.query.filter(Salon.translit == salon_translit).first_or_404()
+    salons = Salon.query.all()
+    try:
+        date = datetime(year, month, day)
+    except ValueError:
+        abort(404)
+    date = Calendar.query.filter(Calendar.date == date).first_or_404()
+    hairdresser_to_shift = [shift.hairdresser_shifts for shift in Shifts.query.filter(Shifts.date_id == date.id)]
+    hairdressers = []
+    for hairdresser in hairdresser_to_shift:
+        try:
+            s = db.session.query(func.sum(ServiceToAppointment.final_price)).select_from(Hairdresser)\
+                .outerjoin(Appointment).outerjoin(ServiceToAppointment).group_by(Hairdresser)\
+                .filter(Appointment.date == date.date, Appointment.salon_id == 1, Hairdresser.id == hairdresser.id)\
+                .first()[0]
+        except TypeError:
+            s = None
+        hairdressers.append((hairdresser, s))
+    appointments = Appointment.query.with_entities(Appointment, func.sum(ServiceToAppointment.final_price)
+                                                   .label('total_price')) \
+        .outerjoin(ServiceToAppointment).group_by(Appointment.id).filter(Appointment.salon_id == salon.id)\
+        .filter(Appointment.date == date.date).order_by(Appointment.time)
+    if request.args.get('hairdresser', type=int):
+        appointments = appointments.filter(Appointment.hairdresser_id == request.args.get('hairdresser', type=int))
+    a_appointments = appointments.filter(Appointment.accomplished == True)
+    na_appointments = appointments.filter(Appointment.accomplished.is_(False))
+    appointments_count = Appointment.query.filter(Appointment.date == date.date)\
+                                          .filter(Appointment.accomplished == True).count()
+    revenue = Appointment.query.with_entities(func.sum(ServiceToAppointment.final_price)).select_from(Appointment)\
+        .join(ServiceToAppointment).filter(Appointment.date == date.date, Appointment.salon_id == salon.id).first()[0]
+    return render_template('day_record.html', title='Рабочий журнал', salons=salons, salon_id=salon.id,
+                           salon_translit=salon_translit, date=date, hairdressers=hairdressers,
+                           appointments=a_appointments.all(), na_appointments=na_appointments.all(),
+                           visitors=a_appointments.count(), revenue=revenue, appointments_count=appointments_count)
+
+
+@app.route('/admin/appointment/add', methods=['GET', 'POST'])
+@login_required
+def appointment_add():
+    form = AppointmentForm()
+    if request.args.get('date'):
+        form.date.data = datetime.strptime(request.args.get('date'), '%Y-%m-%d')
+    form.salon.choices = [(str(row.id), row.name) for row in Salon.query.order_by(Salon.id).all()]
+    form.services.choices = [(str(row.id), row.name) for row in Service.query.all()]
+    if form.validate_on_submit():
+        print(form.data)
+        client = Client.query.filter(Client.phone_number == form.client.data).first()
+        appointment = Appointment(date=form.date.data, time=form.time.data, client_id=client.id,
+                                  salon_id=form.salon.data, hairdresser_id=form.hairdresser.data or None,
+                                  comment=form.comment.data, accomplished=form.accomplished.data)
+        db.session.add(appointment)
+        db.session.commit()
+        for service_id in form.services.data:
+            service = ServiceToAppointment(service_id=service_id, appointment_id=appointment.id)
+            service.set_price()
+            db.session.add(service)
+        db.session.commit()
+        flash(f'Посещение № {appointment.id} от {appointment.date.strftime("%d.%m.%Y")} успешно добавлено.')
+        return redirect(url_for('appointment_detail', appointment_id=appointment.id))
+    return render_template('appointment_add.html', title=f'Новое посещение', form=form)
+
+
+@app.route('/admin/appointment/get_data/', methods=['POST'])
+@is_fetch
+def add_get_data():
+    data = request.get_json()
+    print(data)
+    hairdressers = None
+    default_hairdresser = None
+    services = [{'id': service.id, 'name': service.name} for service in Service.query.all()]
+    if data.get('date'):
+        date_id = Calendar.query.filter(Calendar.date == datetime.strptime(data['date'], '%Y-%m-%d').date()).first().id
+        shifts = Shifts.query.filter(Shifts.salon_id == data.get('salon_id'), Shifts.date_id == date_id).all()
+        hairdressers = [{'id': shift.hairdresser_shifts.id, 'name': shift.hairdresser_shifts.name} for shift in shifts]
+        if data.get('hairdresser_id'):
+            default_hairdresser = int(data.get('hairdresser_id'))
+            services = [{'id': service.id, 'name': service.name} for service
+                        in Hairdresser.query.get(default_hairdresser).specialization]
+    return jsonify(clients=[i.phone_number for i in Client.query.all()], hairdressers=hairdressers,
+                   default_hairdresser=default_hairdresser, services=services)
+
+
+@app.route('/admin/appointment/get_clients/')
+@is_fetch
+def get_clients():
+    return jsonify(clients=[i.phone_number for i in Client.query.all()])
+
+
+@app.route('/admin/appointment/get_client_data/', methods=['POST'])
+@is_fetch
+def get_client_data():
+    data = request.get_json()
+    print(data)
+    client = Client.query.filter(Client.phone_number == data.get('phone_number')).first()
+    if client:
+        return jsonify(client=client.id)
+    else:
+        return jsonify(client=False)

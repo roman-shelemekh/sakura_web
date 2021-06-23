@@ -15,18 +15,15 @@ fetch_data(initial=true)
 
 date.addEventListener('input', event =>{
     send_data['date'] = event.target.value
-    console.log(send_data)
     fetch_data()
     checkbox_status(event.target.value)
 })
 salon_id.addEventListener('change', event =>{
     send_data['salon_id'] = event.target.value
-    console.log(send_data)
     fetch_data()
 })
 hairdresser_select.addEventListener('change', event =>{
     send_data['hairdresser_id'] = event.target.value
-    console.log(send_data)
     fetch_data()
 })
 
@@ -41,7 +38,6 @@ function fetch_data(initial=false) {
             'X-Requested-With': 'XMLHttpRequest'
         }
     }).then(response => response.json()).then(json => {
-        console.log(json);
         for (const client of json.clients) {
             clients_list.innerHTML += '<option value="' + client + '">'
         }

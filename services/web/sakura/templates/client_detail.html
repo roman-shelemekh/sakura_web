@@ -76,7 +76,7 @@
                 {% set priceTotal = namespace(sum=0.0) %}
                 {% if appointment.services %}
                     {% for service in appointment.services  %}
-                    {% set priceTotal.sum = priceTotal.sum + service.price|float %}
+                    {% set priceTotal.sum = priceTotal.sum + service.final_price|float %}
                     {% endfor %}
                 {{ priceTotal.sum|float_round }}
                 {% else %} -

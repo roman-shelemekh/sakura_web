@@ -1,0 +1,162 @@
+{% extends "admin.html" %}
+
+{% block right_column %}
+
+<div class="row mb-3">
+    <div class="col-8">
+        <h3 class="mb-3">Рабочий журнал за {{ date }}</h3>
+    </div>
+    <div class="col-4">
+        <select class="form-select float-end" id="selectSalon">
+            {% for salon in salons %}
+            <option value="{{ url_for('day_record', salon_translit=salon.translit, year=date.date.year, month=date.date.month, day=date.date.day) }}" {% if salon_translit == salon.translit %} selected="true" {% endif %}> {{ salon.name }} </option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+<div class="p-3 bg-light mb-3">
+    <table class="table table-sm table-light table-borderless ">
+        <tbody class="small">
+            <tr>
+                <td><b>Количество состоявшихся посещений:</b></td>
+                <td>{% if appointments_count %} {{ appointments_count }}{% else %} - {% endif %}</td>
+            </tr>
+            <tr>
+                <td><b>Общая дневная выручка:</b></td>
+                <td>{% if revenue %} {{ revenue|round(2) }} руб.{% else %} - {% endif %}</td>
+            </tr>
+            {% for hairdresser in hairdressers %}
+            <tr>
+                <td>{{ hairdresser[0].name }}</td>
+                <td>{% if hairdresser[1] %}{{ hairdresser[1]|round(2) }} руб.{% else %} - {% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="d-grid gap-2 mb-3">
+    <a class="btn btn-primary" href="{{ url_for('appointment_add', date=date.date) }}" role="button">Добавить новое посещение</a>
+</div>
+
+<div class="pb-2">
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link {% if not request.args %}active{% endif %}" href="{{ url_for('day_record', salon_translit=salon_translit, year=date.date.year, month=date.date.month, day=date.date.day) }}">Все</a>
+        </li>
+        {% for hairdresser in hairdressers %}
+        <li class="nav-item">
+            <a class="nav-link {% if request.args.get('hairdresser')|int == hairdresser[0].id %}active{% endif %}" href="{{ url_for('day_record', salon_translit=salon_translit, year=date.date.year, month=date.date.month, day=date.date.day, hairdresser=hairdresser[0].id) }}">{{ hairdresser[0].name }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% if appointments %}
+<h5 class="mt-4 mb-3 text-center">Состоявшиеся посещения <i class="text-success far fa-check-circle"></i></h5>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col"></th>
+            <th scope="col">Время</th>
+            <th scope="col">Мастер</th>
+            <th scope="col">Клиент</th>
+            <th scope="col">Услуги</th>
+            <th scope="col">Сумма</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for appointment in appointments %}
+        <tr>
+            <th scope="row">{{ loop.index }}</th>
+            <td><a href="{{ url_for('appointment_detail', appointment_id=appointment[0].id) }}"><i class="text-primary far fa-eye"></i></a></td>
+            <td>
+                {% if appointment[0].time %}{{ appointment[0].time|ru_time }}{% else %} - {% endif %}
+            </td>
+            <td>
+                {% if appointment[0].hairdresser_appointment %}{{ appointment[0].hairdresser_appointment }}{% else %} - {% endif %}
+            </td>
+            <td>
+                {% if appointment[0].client_appointment %}{{ appointment[0].client_appointment }}{% else %} - {% endif %}
+            </td>
+            <td>
+                {% if appointment[0].services %}
+                <ul class="list-unstyled">
+                {% for service in appointment[0].services  %}
+                <li>{{ service }}</li>
+                {% endfor %}
+                </ul>
+                {% else %} -
+                {% endif %}
+
+            </td>
+            <td>
+                {% if appointment[1] %} {{ appointment[1] }} {% else %} - {% endif %}
+            </td>
+            <td>
+                {% if appointment[0].comment %}<a tabindex="0" class="" role="button" {% if appointment[0].comment %} data-bs-toggle="popover" data-bs-trigger="focus" title="Комментарий" data-bs-content="{{ appointment[0].comment }}"{% endif %}><i class="far fa-comment-alt"></i></a>{% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if na_appointments %}
+<h5 class="mt-4 mb-3 text-center">Записи <i class="far fa-question-circle text-warning"></i></h5>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col"></th>
+            <th scope="col">Время</th>
+            <th scope="col">Мастер</th>
+            <th scope="col">Клиент</th>
+            <th scope="col">Услуги</th>
+            <th scope="col">Сумма</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for appointment in na_appointments %}
+        <tr>
+            <th scope="row">{{ loop.index }}</th>
+            <td><a href="{{ url_for('appointment_detail', appointment_id=appointment[0].id) }}"><i class="text-primary far fa-eye"></i></a></td>
+            <td>
+                {% if appointment[0].time %}{{ appointment[0].time|ru_time }}{% else %} - {% endif %}
+            </td>
+            <td>
+                {% if appointment[0].hairdresser_appointment %}{{ appointment[0].hairdresser_appointment }}{% else %} - {% endif %}
+            </td>
+            <td>
+                {% if appointment[0].client_appointment %}{{ appointment[0].client_appointment }}{% else %} - {% endif %}
+            </td>
+            <td>
+                {% if appointment[0].services %}
+                <ul class="list-unstyled">
+                {% for service in appointment[0].services  %}
+                <li>{{ service }}</li>
+                {% endfor %}
+                </ul>
+                {% else %} -
+                {% endif %}
+
+            </td>
+            <td>
+                {% if appointment[1] %} {{ appointment[1] }} {% else %} - {% endif %}
+            </td>
+            <td>
+                {% if appointment[0].comment %}<a tabindex="0" class="" role="button" {% if appointment[0].comment %} data-bs-toggle="popover" data-bs-trigger="focus" title="Комментарий" data-bs-content="{{ appointment[0].comment }}"{% endif %}><i class="far fa-comment-alt"></i></a>{% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% endblock %}
+
+
+{% block script %}
+<script type="text/javascript" src="{{ url_for('staticfiles', filename='appointment.js') }}"></script>
+{% endblock %}

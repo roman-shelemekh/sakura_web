@@ -13,8 +13,5 @@ def inject_date():
 
 @app.context_processor
 def inject_salon():
-    try:
-        salon_translit = Salon.query.order_by(Salon.id).first().translit
-    except:
-        salon_translit = None
+    salon_translit = Salon.query.order_by(Salon.id).first().translit
     return dict(first_salon_translit=salon_translit)

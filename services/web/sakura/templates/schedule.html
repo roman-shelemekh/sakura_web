@@ -60,7 +60,7 @@
             <tbody>
                 {% for date in dates %}
                 <tr class="{% if date.date.strftime('%d.%m.%Y') == current_date %}table-light{% endif %}">
-                    <td><a href="#"><i class="far fa-calendar-alt"></i></a></td>
+                    <td><a href="{{ url_for('day_record', salon_translit=salon_translit, year=date.date.year, month=date.date.month, day=date.date.day) }}"><i class="far fa-calendar-alt"></i></a></td>
                     <td ondrop="adjacentDrop(event)" ondragover="allowDrop(event)" ondragleave="leave(event)" class="drop-zone" scope="row"><b>{{ date.date|ru_date }}</b></br>{{ date.date|ru_weekday }}</td>
                     <td ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="leave(event)" class="drop-zone drop-target">
                         {% for shift in date.shifts %}

@@ -107,16 +107,17 @@ class ServiceToAppointment(db.Model):
     appointment_id = db.Column(db.Integer, db.ForeignKey('appointment.id', ondelete='CASCADE'), primary_key=True)
     service_id = db.Column(db.Integer, db.ForeignKey('service.id', ondelete='CASCADE'), primary_key=True)
     price = db.Column(db.Float)
+    discount = db.Column(db.Integer, default=0)
+    final_price = db.Column(db.Float)
     service = db.relationship("Service")
 
     def __repr__(self):
         return self.service.name
 
     def set_price(self):
-        price = Service.query.get(self.service_id).price
-        discount = Appointment.query.get(self.appointment_id).client_appointment.discount or 0
-        final_price = round(price * (100 - discount) / 100, 2)
-        self.price = final_price
+        self.price = Service.query.get(self.service_id).price
+        self.discount = Appointment.query.get(self.appointment_id).client_appointment.discount or 0
+        self.final_price = round(self.price * (100 - self.discount) / 100, 2)
 
 
 class Appointment(db.Model):
@@ -128,9 +129,7 @@ class Appointment(db.Model):
     hairdresser_id = db.Column(db.Integer, db.ForeignKey('hairdresser.id', ondelete='SET NULL'))
     comment = db.Column(db.String(500))
     accomplished = db.Column(db.Boolean(), default=True)
-    # service_to_appointment = db.relationship('Service', secondary=service_to_appointment, lazy='subquery',
-    #                                          backref=db.backref('service_appointment', lazy=True))
-    services = db.relationship('ServiceToAppointment', backref='appointment_services')
+    services = db.relationship('ServiceToAppointment', backref='appointment_services', cascade="all, delete")
 
 
 class Calendar(db.Model):
