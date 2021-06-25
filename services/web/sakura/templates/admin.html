@@ -10,38 +10,26 @@
                 <h4 class="pb-3">Меню панели управления</h4>
                 {% if first_salon_translit %}
                 <li class="nav-item">
-                    <div class="nav-link">
-                        <a class="text-decoration-none me-2" href="{{ url_for('all_appointments', salon_translit=first_salon_translit) }}">Посещения</a>
-                        <a class="add_hairdresser" href="#"><i class="fas fa-plus-circle"></i></a>
-                    </div>
+                    <a class="nav-link" aria-current="page" href="{{ url_for('admin') }}">Главная</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" aria-current="page" href="{{ url_for('schedule', salon_translit=first_salon_translit, year=current_year, month=current_month) }}">График работы</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="{{ url_for('all_appointments', salon_translit=first_salon_translit) }}">Посещения</a>
+                </li>
                 {% endif %}
                 <li class="nav-item">
-                    <div class="nav-link">
-                        <a class="text-decoration-none me-2" href="{{ url_for('salon') }}">Парикмахерские</a>
-                        <a class="add_hairdresser" href="{{ url_for('add_salon') }}"><i class="fas fa-plus-circle"></i></a>
-                    </div>
+                    <a class="nav-link" aria-current="page" href="{{ url_for('client') }}">Клиенты</a>
                 </li>
                 <li class="nav-item">
-                    <div class="nav-link">
-                        <a class="text-decoration-none me-2" href="{{ url_for('hairdresser') }}">Мастера</a>
-                        <a class="add_hairdresser" href="{{ url_for('add_hairdresser') }}"><i class="fas fa-plus-circle"></i></a>
-                    </div>
+                    <a class="nav-link" aria-current="page" href="{{ url_for('service') }}">Услуги</a>
                 </li>
                 <li class="nav-item">
-                    <div class="nav-link">
-                        <a class="text-decoration-none me-2" href="{{ url_for('service') }}">Услуги</a>
-                        <a class="add_hairdresser" href="{{ url_for('add_service') }}"><i class="fas fa-plus-circle"></i></a>
-                    </div>
+                    <a class="nav-link" aria-current="page" href="{{ url_for('hairdresser') }}">Мастера</a>
                 </li>
                 <li class="nav-item">
-                    <div class="nav-link">
-                        <a class="text-decoration-none me-2" href="{{ url_for('client') }}">Клиенты</a>
-                        <a class="add_hairdresser" href="{{ url_for('add_client') }}"><i class="fas fa-plus-circle"></i></a>
-                    </div>
+                    <a class="nav-link" aria-current="page" href="{{ url_for('salon') }}">Парикмахерские</a>
                 </li>
             </ul>
         </div>

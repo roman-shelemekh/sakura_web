@@ -1,21 +1,22 @@
 {% extends "admin.html" %}
 
 {% block right_column %}
-<!--<div>-->
-<!--    <h3 class="mb-3">Главная</h3>-->
-<!--</div>-->
-<div class="pb-5">
-    <h4 class="text-center">Вас приветствует система управления бизнес-процессами сети парикмахерских "Сакура"</h4>
-</div>
-
-<form method="POST" class="mb-3 needs-validation" novalidate>
-    <div class="row align-items-center">
-        <div class="col-auto">Перейти к журналу за рабочий день на дату</div>
-        <div class="col-3">
-            <input class="form-control" name="date" required type="date">
-        </div>
-        <div class="col-3"><button type="submit" class="btn btn-primary">Перейти</button></div>
+<div class="card text-center">
+    <div class="card-header">
+    <h3 class="">Вас приветствует система управления бизнес-процессами сети парикмахерских "Сакура"</h3>
     </div>
-</form>
+    <div class="card-body m-5">
+        <h4 class="display-6 card-title mb-5"><a class="link-secondary text-decoration-none" href="{{ url_for('day_record', year=current_year, month=current_month, day=current_day, salon_translit=first_salon_translit) }}">Сегодня {{ current_date.strftime('%d.%m.%Y') }}, {{ current_date|ru_weekday }}</a></h4>
+        <form method="POST" class="mb-3 needs-validation" novalidate>
+            <div class="row align-items-center">
+                <div class="col-auto lead">Перейти к рабочему журналу за дату</div>
+                <div class="col-auto">
+                    <input class="form-control" name="date" required type="date">
+                </div>
+                <div class="col-auto"><button type="submit" class="btn btn-primary">Перейти</button></div>
+            </div>
+        </form>
+    </div>
+</div>
 
 {% endblock %}

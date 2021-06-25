@@ -12,5 +12,5 @@ migrate = Migrate(app, db)
 login = LoginManager(app)
 login.login_view = 'login'
 
-
-from . import routes, models, template_filters, context_processors
+from .routes import appointment, client, hairdresser, main, salon, service
+from . import models, template_filters, context_processors

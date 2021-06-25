@@ -3,7 +3,7 @@
 {% block right_column %}
 <div>
     <a href="{{ url_for('appointment_update', appointment_id=appointment.id) }}" class="btn btn-outline-primary btn-sm float-end"><i class="fas fa-edit pe-2"></i>Изменить</a>
-    <h3 class="mb-3">Посещение от <a class="link-secondary" href="{{ url_for('day_record', year=appointment.date.year, month=appointment.date.month, day=appointment.date.day, salon_translit=appointment.salon_appointment.translit) }}">{{ appointment.date.strftime("%d.%m.%Y") }}</a> {% if appointment.time %} в {{ appointment.time.strftime("%H:%M") }} {% endif %} {% if appointment.accomplished %} <i class="text-success far fa-check-circle"></i> {% else %} <i class="far fa-question-circle text-warning"></i> {% endif %}</i></h3>
+    <h3 class="mb-3">Посещение от <a class="link-secondary text-decoration-none" href="{{ url_for('day_record', year=appointment.date.year, month=appointment.date.month, day=appointment.date.day, salon_translit=appointment.salon_appointment.translit) }}">{{ appointment.date.strftime("%d.%m.%Y") }}</a> {% if appointment.time %} в {{ appointment.time.strftime("%H:%M") }} {% endif %} {% if appointment.accomplished %} <i class="text-success far fa-check-circle"></i> {% else %} <i class="far fa-question-circle text-warning"></i> {% endif %}</i></h3>
 </div>
 
 <div class="p-3 bg-light">
