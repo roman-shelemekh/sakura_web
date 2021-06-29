@@ -9,7 +9,8 @@ from sakura.models import Client, Appointment, ServiceToAppointment
 @app.route('/admin/client')
 @login_required
 def client():
-    clients = Client.query.all()
+    page = request.args.get('page', 1, type=int)
+    clients = Client.query.paginate(page, 30, False)
     return render_template('client.html', title='Клиенты', clients=clients)
 
 

@@ -16,6 +16,9 @@ psql:
 shell:
 	docker-compose exec sakura flask shell
 
+test-data:
+	docker-compose exec -T sakura flask shell < services/web/sakura/test_data.py
+
 psql-prod:
 	docker-compose exec db psql --username=sakura --dbname=sakura_prod
 
@@ -28,3 +31,5 @@ stop-prod:
 db-prod:
 	docker-compose -f docker-compose.prod.yml exec sakura flask db upgrade
 
+test-data-prod:
+	docker-compose -f docker-compose.prod.yml exec -T sakura flask shell < services/web/sakura/test_data.py

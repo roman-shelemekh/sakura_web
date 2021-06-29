@@ -2,7 +2,6 @@
 
 {% block right_column %}
 
-<!--Переключение парикмахерских-->
 <div class="row mb-3">
     <div class="col-8">
         <h3 class="mb-3">Посещения</h3>
@@ -15,7 +14,6 @@
         </select>
     </div>
 </div>
-
 <form class="mb-3 bg-light rounded p-4" novalidate>
     <h6>Найти посещения</h6>
     <div class="row align-items-center mb-2 gx-1">
@@ -43,8 +41,6 @@
     </div>
     <div class="col-auto"><button type="submit" class="btn btn-outline-primary btn-sm"><i class="fas fa-search"></i> Поиск</button></div>
 </form>
-
-
 <table class="table">
     <thead>
         <tr>
@@ -87,7 +83,7 @@
 
             </td>
             <td>
-                {% if appointment[1] %} {{ appointment[1] }} {% else %} - {% endif %}
+                {% if appointment[1] %} {{ appointment[1]|float_round }} {% else %} - {% endif %}
             </td>
             <td>{% if appointment[0].accomplished %} <i class="text-success far fa-check-circle"></i> {% else %} <i class="far fa-question-circle text-warning"></i> {% endif %}</td>
             <td>

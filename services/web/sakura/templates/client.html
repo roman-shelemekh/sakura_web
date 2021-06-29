@@ -8,7 +8,6 @@
 <table class="table">
     <thead>
         <tr>
-            <th scope="col">#</th>
             <th scope="col">Имя</th>
             <th scope="col">Номер телефона</th>
             <th scope="col">Скидка</th>
@@ -16,9 +15,8 @@
         </tr>
     </thead>
     <tbody>
-        {% for client in clients %}
+        {% for client in clients.items %}
         <tr>
-            <th scope="row">{{ loop.index }}</th>
             <td><a href="{{ url_for('client_detail', client_id=client.id) }}">{{ client.name }}</a></td>
             <td>{{ client.phone_number }}</td>
 
@@ -28,4 +26,34 @@
     {% endfor %}
     </tbody>
 </table>
+
+{% if clients.pages > 1 %}
+<nav>
+    <ul class="pagination pagination-sm justify-content-center">
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('client', page=1) }}">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% if clients.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('client', page=clients.prev_num) }}">{{ clients.prev_num }}</a>
+        </li>
+        {% endif %}
+        <li class="page-item active">
+            <a class="page-link" href="{{ url_for('client', page=clients.page) }}">{{ clients.page }}</a>
+        </li>
+        {% if clients.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('client', page=clients.next_num) }}">{{ clients.next_num }}</a>
+        </li>
+        {% endif %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('client', page=clients.pages) }}">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif  %}
 {% endblock %}

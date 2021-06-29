@@ -91,7 +91,7 @@
 
             </td>
             <td>
-                {% if appointment[1] %} {{ appointment[1] }} {% else %} - {% endif %}
+                {% if appointment[1] %} {{ appointment[1]|float_round }} {% else %} - {% endif %}
             </td>
             <td>
                 {% if appointment[0].comment %}<a tabindex="0" class="" role="button" {% if appointment[0].comment %} data-bs-toggle="popover" data-bs-trigger="focus" title="Комментарий" data-bs-content="{{ appointment[0].comment }}"{% endif %}><i class="far fa-comment-alt"></i></a>{% endif %}
@@ -143,7 +143,7 @@
 
             </td>
             <td>
-                {% if appointment[1] %} {{ appointment[1] }} {% else %} - {% endif %}
+                {% if appointment[1] %} {{ appointment[1]|float_round }} {% else %} - {% endif %}
             </td>
             <td>
                 {% if appointment[0].comment %}<a tabindex="0" class="" role="button" {% if appointment[0].comment %} data-bs-toggle="popover" data-bs-trigger="focus" title="Комментарий" data-bs-content="{{ appointment[0].comment }}"{% endif %}><i class="far fa-comment-alt"></i></a>{% endif %}

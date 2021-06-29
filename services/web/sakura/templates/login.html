@@ -7,7 +7,11 @@
             <div class="mb-3 mt-5 text-center">
                 <h2>Вход</h2>
             </div>
-
+            {% if get_flashed_messages() %}
+            {% for message in get_flashed_messages() %}
+            <div class="alert alert-success" role="alert"><i class="text-success far fa-check-circle pe-2"></i>{{ message }}</div>
+            {% endfor %}
+            {% endif %}
             <form action="" method="post" class="needs-validation" novalidate>
                 <div>{{ form.hidden_tag() }}</div>
 
@@ -33,8 +37,12 @@
                     </div>
                     {% endif %}
                 </div>
-                <div class="d-grid gap-2">{{ form.submit(class="btn btn-outline-primary btn-lg") }}</div>
+                <div class="d-grid gap-2 mb-3">{{ form.submit(class="btn btn-outline-primary btn-lg") }}</div>
             </form>
+            <div class="text-center">
+                <small class="text-muted">* Данное веб-приложение является проектом для партфолио Рамана Шелемеха. Все тестовые данные - вымышленные.</small>
+            </div>
+
         </div>
     </div>
 </main>

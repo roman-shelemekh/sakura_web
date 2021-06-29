@@ -57,7 +57,7 @@ class Service(db.Model):
     type_id = db.Column(db.Integer, db.ForeignKey('type.id', ondelete='SET NULL'))
 
     def __repr__(self):
-        return self.name
+        return self.name + ' (' + self.service_type.name + ')'
 
 
 class Type(db.Model):

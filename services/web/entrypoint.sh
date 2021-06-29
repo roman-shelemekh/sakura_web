@@ -12,5 +12,6 @@ then
 fi
 
 flask db upgrade
+flask shell < sakura/entrypoint.py
 
 exec "$@"

@@ -5,6 +5,8 @@
     <div class="card-header">
     <h3 class="">Вас приветствует система управления бизнес-процессами сети парикмахерских "Сакура"</h3>
     </div>
+
+    {% if first_salon_translit %}
     <div class="card-body m-5">
         <h4 class="display-6 card-title mb-5"><a class="link-secondary text-decoration-none" href="{{ url_for('day_record', year=current_year, month=current_month, day=current_day, salon_translit=first_salon_translit) }}">Сегодня {{ current_date.strftime('%d.%m.%Y') }}, {{ current_date|ru_weekday }}</a></h4>
         <form method="POST" class="mb-3 needs-validation" novalidate>
@@ -17,6 +19,7 @@
             </div>
         </form>
     </div>
+    {% endif %}
 </div>
 
 {% endblock %}

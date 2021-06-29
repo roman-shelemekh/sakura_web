@@ -52,8 +52,11 @@ def delete_hairdresser(hairdresser_id):
 @login_required
 def add_hairdresser():
     form = HairdresserForm()
+    form.specialization.choices = [(str(row.id), row.name + ' (' + row.service_type.name + ')') for row in
+                                   Service.query.all()]
+    form.specialization.default = [str(row.id) for row in Service.query.all()]
+    form.process()
     form.is_available.data = True
-    form.specialization.choices = [(str(row.id), row.name + ' (' + row.service_type.name + ')') for row in Service.query.all()]
     if form.validate_on_submit():
         hairdresser = Hairdresser(name=form.name.data, dob=form.dob.data,
                                   comment=form.comment.data,

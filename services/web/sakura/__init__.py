@@ -11,6 +11,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login = LoginManager(app)
 login.login_view = 'login'
+login.login_message = None
 
 from .routes import appointment, client, hairdresser, main, salon, service
 from . import models, template_filters, context_processors
