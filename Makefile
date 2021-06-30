@@ -23,7 +23,7 @@ psql-prod:
 	docker-compose exec db psql --username=sakura --dbname=sakura_prod
 
 start-prod:
-	docker-compose -f docker-compose.prod.yml up --build --remove-orphans
+	docker-compose -f docker-compose.prod.yml up --build -d --remove-orphans
 
 stop-prod:
 	docker-compose -f docker-compose.prod.yml down --remove-orphans

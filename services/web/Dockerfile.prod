@@ -5,6 +5,8 @@ ENV PYTHONUNBUFFERED 1
 
 RUN mkdir -p /home/balthasar
 
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 RUN groupadd -r balthasar &&\
     useradd -r -g balthasar -d /home/balthasar -s /sbin/nologin balthasar
 
@@ -26,5 +28,6 @@ COPY . .
 RUN chown -R balthasar:balthasar /home/balthasar/app
 
 USER balthasar
+
 
 ENTRYPOINT ["/home/balthasar/app/entrypoint.sh"]
