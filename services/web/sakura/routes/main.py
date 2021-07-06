@@ -1,4 +1,6 @@
-from flask import  render_template, send_from_directory, redirect, url_for, request, jsonify, abort
+from flask import (
+    render_template, send_from_directory, redirect, url_for, request, jsonify, abort, send_file
+)
 from sqlalchemy.exc import IntegrityError
 from flask_login import current_user, login_user, logout_user, login_required
 from datetime import datetime
@@ -7,6 +9,7 @@ from sakura import app, db
 from sakura.forms import LoginForm
 from sakura.models import User, Hairdresser, Salon, Calendar, Shifts, Appointment, ServiceToAppointment
 from sakura.utils import months_to_navigate, month_for_heading, is_fetch
+from sakura.xlsx import create_xlsx
 
 
 @app.route("/static/<path:filename>")
@@ -104,6 +107,9 @@ def day_record(year, month, day, salon_translit):
     except ValueError:
         abort(404)
     date = Calendar.query.filter(Calendar.date == date).first_or_404()
+    revenue = Appointment.query.with_entities(func.sum(ServiceToAppointment.final_price)).select_from(Appointment) \
+        .join(ServiceToAppointment).filter(Appointment.accomplished == True, Appointment.date == date.date,
+                                           Appointment.salon_id == salon.id).first()[0]
     hairdresser_to_shift = [shift.hairdresser_shifts for shift in
                             Shifts.query.filter(Shifts.date_id == date.id, Shifts.salon_id == salon.id)]
     hairdressers = []
@@ -111,7 +117,7 @@ def day_record(year, month, day, salon_translit):
         try:
             s = db.session.query(func.sum(ServiceToAppointment.final_price)).select_from(Hairdresser)\
                 .outerjoin(Appointment).outerjoin(ServiceToAppointment).group_by(Hairdresser)\
-                .filter(Appointment.date == date.date, Appointment.salon_id == 1, Hairdresser.id == hairdresser.id,
+                .filter(Appointment.date == date.date, Appointment.salon_id == salon.id, Hairdresser.id == hairdresser.id,
                         Appointment.accomplished == True, Appointment.salon_id == salon.id).first()[0]
         except TypeError:
             s = None
@@ -127,10 +133,42 @@ def day_record(year, month, day, salon_translit):
     appointments_count = Appointment.query.filter(Appointment.date == date.date)\
                                           .filter(Appointment.accomplished == True, Appointment.salon_id == salon.id)\
                                                                                                             .count()
-    revenue = Appointment.query.with_entities(func.sum(ServiceToAppointment.final_price)).select_from(Appointment)\
-        .join(ServiceToAppointment).filter(Appointment.accomplished == True, Appointment.date == date.date,
-                                           Appointment.salon_id == salon.id).first()[0]
+
     return render_template('day_record.html', title='Рабочий журнал', salons=salons, salon_id=salon.id,
                            salon_translit=salon_translit, date=date, hairdressers=hairdressers, revenue=revenue,
                            appointments=a_appointments.all(), na_appointments=na_appointments.all(),
                            appointments_count=appointments_count)
+
+
+@app.route('/admin/schedule/<salon_translit>/<int:year>/<int:month>/<int:day>/xlsx')
+@login_required
+def xlsx(year, month, day, salon_translit):
+    salon = Salon.query.filter(Salon.translit == salon_translit).first_or_404()
+    try:
+        date = datetime(year, month, day)
+    except ValueError:
+        abort(404)
+    date = Calendar.query.filter(Calendar.date == date).first_or_404()
+    revenue = Appointment.query.with_entities(func.sum(ServiceToAppointment.final_price)).select_from(Appointment) \
+        .join(ServiceToAppointment).filter(Appointment.accomplished == True, Appointment.date == date.date,
+                                           Appointment.salon_id == salon.id).first()[0]
+    hairdresser_to_shift = [shift.hairdresser_shifts for shift in
+                            Shifts.query.filter(Shifts.date_id == date.id, Shifts.salon_id == salon.id)]
+    hairdressers = []
+    for hairdresser in hairdresser_to_shift:
+        try:
+            s = db.session.query(func.sum(ServiceToAppointment.final_price)).select_from(Hairdresser) \
+                .outerjoin(Appointment).outerjoin(ServiceToAppointment).group_by(Hairdresser) \
+                .filter(Appointment.date == date.date, Appointment.salon_id == salon.id,
+                        Hairdresser.id == hairdresser.id,
+                        Appointment.accomplished == True, Appointment.salon_id == salon.id).first()[0]
+        except TypeError:
+            s = None
+        hairdressers.append((hairdresser, s))
+    appointments = Appointment.query.with_entities(Appointment, func.sum(ServiceToAppointment.final_price)
+                                                   .label('total_price')) \
+        .outerjoin(ServiceToAppointment).group_by(Appointment.id).filter(Appointment.salon_id == salon.id) \
+        .filter(Appointment.date == date.date).order_by(Appointment.time).filter(Appointment.accomplished == True)
+    path = create_xlsx(date, salon, appointments, hairdressers, appointments.count(), revenue)
+    print(path)
+    return send_file(path)
