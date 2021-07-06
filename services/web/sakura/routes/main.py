@@ -169,6 +169,7 @@ def xlsx(year, month, day, salon_translit):
                                                    .label('total_price')) \
         .outerjoin(ServiceToAppointment).group_by(Appointment.id).filter(Appointment.salon_id == salon.id) \
         .filter(Appointment.date == date.date).order_by(Appointment.time).filter(Appointment.accomplished == True)
+    if not appointments:
+        abort(404)
     path = create_xlsx(date, salon, appointments, hairdressers, appointments.count(), revenue)
-    print(path)
     return send_file(path)
