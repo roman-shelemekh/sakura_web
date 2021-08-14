@@ -87,7 +87,7 @@ def months_to_navigate(year, month):
     past_months = list(reversed([(i.year, i.month, month_names[i.month - 1] + ' ' + str(i.year)) for i
                                  in [current_month_start + relativedelta(months=-i-1) for i in range(4)]]))
     coming_months = [(i.year, i.month, month_names[i.month - 1] + ' ' + str(i.year)) for i
-                     in [current_month_start + relativedelta(months=+i) for i in range(7)]]
+                     in [current_month_start + relativedelta(months=+i) for i in range(6)]]
     return  past_months + coming_months
 
 def month_for_heading(year, month):

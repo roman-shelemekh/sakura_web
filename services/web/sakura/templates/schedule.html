@@ -28,7 +28,7 @@
                 {% endfor %}
             </ul>
         </li>
-        {% for month in months_to_navigate[3:8] %}
+        {% for month in months_to_navigate[3:7] %}
         <li class="nav-item">
             <a class="nav-link {% if request.path == url_for('schedule', salon_translit=salon_translit, year=month[0], month=month[1]) %}active{% endif %}" href="{{ url_for('schedule', salon_translit=salon_translit, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
         </li>
@@ -36,7 +36,7 @@
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Далее</a>
             <ul class="dropdown-menu">
-                {% for month in months_to_navigate[8:] %}
+                {% for month in months_to_navigate[7:] %}
                 <li>
                     <a class="dropdown-item {% if request.path == url_for('schedule', salon_translit=salon_translit, year=month[0], month=month[1]) %}active{% endif %}" href="{{ url_for('schedule', salon_translit=salon_translit, year=month[0], month=month[1]) }}">{{ month[2] }}</a>
                 </li>
